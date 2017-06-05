@@ -1609,7 +1609,7 @@ void setup() {
   display.setBacklight(WHITE);
   display.clear();
   display.setCursor(0, 0);
-  display.print(P("J1772 Hydra *DL*"));
+  display.print(P("J1772 Hydra *"));
   display.setCursor(0, 1);
   display.print(P("HW:"));
   display.print(P(HW_VERSION));
