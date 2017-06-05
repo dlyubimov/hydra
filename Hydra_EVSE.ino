@@ -416,7 +416,7 @@ char p_buffer[96];
 // HW version
 #define HW_VERSION "2.3.1"
 // SW version
-#define SW_VERSION "2.3.2"
+#define SW_VERSION "2.3.3"
 
 LiquidTWI2 display(LCD_I2C_ADDR, 1);
 
@@ -1896,6 +1896,9 @@ void loop() {
       if (paused && car_a_state == STATE_B) {
         display.setCursor(0, 1);
         display.print(P("A: off  "));
+        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
+        if ( last_car_a_state == STATE_A ) 
+          sequential_mode_tiebreak = CAR_A;
       }
       break;
     }
@@ -1942,6 +1945,9 @@ void loop() {
       if (paused && car_b_state == STATE_B) {
         display.setCursor(8, 1);
         display.print(P("B: off  "));
+        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
+        if ( last_car_b_state == STATE_A ) 
+          sequential_mode_tiebreak = CAR_B;
       }
       break;
     }
