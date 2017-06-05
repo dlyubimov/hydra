@@ -416,7 +416,7 @@ char p_buffer[96];
 // HW version
 #define HW_VERSION "2.3.1"
 // SW version
-#define SW_VERSION "2.3.3"
+#define SW_VERSION "2.3.4"
 
 LiquidTWI2 display(LCD_I2C_ADDR, 1);
 
@@ -429,6 +429,7 @@ unsigned long car_a_error_time, car_b_error_time;
 unsigned long last_current_log_car_a, last_current_log_car_b;
 unsigned long last_state_log;
 unsigned long sequential_pilot_timeout;
+boolean seq_car_a_done = false, seq_car_b_done = false;
 unsigned int pilot_state_a, pilot_state_b;
 unsigned int operatingMode, sequential_mode_tiebreak;
 unsigned long button_press_time, button_debounce_time;
@@ -812,10 +813,20 @@ unsigned long rollRollingAverage(unsigned long array[], unsigned long new_value)
 #endif
 }
 
+// So the desired logic is as follows: 
+// (1) If one or none cars are plugged, the behavior is really no different from shared mode. 
+// (2) if two cars are plugged, 
+// (2a) on un-pause the tie is broken with last car charging during last non-pause, or last car plugged during pause.
+// (2b) once cars are done charging, do not keep flipping -- keep their state B-HIGH. This is reset by entering pause, 
+// OR any of the cars unplugged, in which case "done" restrictions are foregone, as flipping becomes non-issue -- the 
+// car will keep itself off even if we are at FULL advertisement.
+
 void sequential_mode_transition(unsigned int us, unsigned int car_state) {
   unsigned int them = (us == CAR_A)?CAR_B:CAR_A;
   unsigned int *last_car_state = (us == CAR_A)?&last_car_a_state:&last_car_b_state;
   unsigned int their_state = (us == CAR_A)?last_car_b_state:last_car_a_state;
+  boolean& us_done = us == CAR_A?seq_car_a_done:seq_car_b_done;
+  boolean& them_done = them == CAR_A? seq_car_a_done:seq_car_b_done;
   
   switch(car_state) {
     case STATE_A:
@@ -836,23 +847,28 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
       display.setCursor((us == CAR_A)?0:8, 1);
       display.print((us == CAR_A)?"A":"B");
       display.print(P(": ---  "));
+      // reset done state for all
+      us_done = false;
+      them_done = false;
       break;
     case STATE_B:
       // No matter what, insure that the relay is off.
       setRelay(us, LOW);
       if (*last_car_state == STATE_C || *last_car_state == STATE_D) {
         // We transitioned from C/D to B. That means we're passing the batton
-        // to the other car, if they want it.
+        // to the other car, if they want it and not marked "done" yet.
         if (their_state == STATE_B) {
           setPilot(us, HIGH);
-          setPilot(them, FULL);
+          if ( !them_done ) setPilot(them, FULL);
           EEPROM.write(EEPROM_LOC_CAR, them);
           display.setCursor((them == CAR_A)?0:8, 1);
           display.print((them == CAR_A)?"A":"B");
-          display.print(P(": off  "));
+          if (them_done) display.print(P(": done ")); else display.print(P(": off  "));
           display.setCursor((us == CAR_A)?0:8, 1);
           display.print((us == CAR_A)?"A":"B");
           display.print(P(": done ")); // differentiated from "wait" because a C/D->B transition has occurred.
+          // Disable future charges for this car until re-unpaused or re-plugged.
+          us_done = true;
           sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
         } else {
           display.setCursor((us == CAR_A)?0:8, 1);
@@ -865,6 +881,8 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
         if (their_state == STATE_A) {
           // We can only grab the batton if they're not plugged in at all.
           setPilot(us, FULL);
+          us_done = false;
+          them_done = false;
           sequential_pilot_timeout = 0;
           EEPROM.write(EEPROM_LOC_CAR, us);
           display.setCursor((us == CAR_A)?0:8, 1);
@@ -880,8 +898,7 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
             return;
           }
           // But if it IS us, then clear the tiebreak.
-          if (sequential_mode_tiebreak == us || ( sequential_mode_tiebreak == DUNNO && us == DEFAULT_TIEBREAK) ) {
-            sequential_mode_tiebreak = DUNNO;
+          if (!us_done && (sequential_mode_tiebreak == us || ( sequential_mode_tiebreak == DUNNO && us == DEFAULT_TIEBREAK))) {
             setPilot(us, FULL);
             sequential_pilot_timeout = millis();
             EEPROM.write(EEPROM_LOC_CAR, us);
@@ -894,7 +911,7 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
         // Either they are in state C/D or they're in state B and we lost the tiebreak.
         display.setCursor((us == CAR_A)?0:8, 1);
         display.print((us == CAR_A)?"A":"B");
-        display.print(P(": wait "));
+        if ( us_done) display.print(P(": done ")); else display.print(P(": wait "));
       }
       break;
     case STATE_C:
@@ -1828,7 +1845,9 @@ void loop() {
       last_car_a_state = DUNNO;
       last_car_b_state = DUNNO;
       car_a_request_time = 0;
-      car_b_request_time = 0;      
+      car_b_request_time = 0;     
+      seq_car_a_done = false;
+      seq_car_b_done = false; 
       log(LOG_INFO, P("Pausing."));
     }
     paused = true;
@@ -1897,7 +1916,7 @@ void loop() {
         display.setCursor(0, 1);
         display.print(P("A: off  "));
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        if ( last_car_a_state == STATE_A ) 
+        if ( last_car_a_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_A;
       }
       break;
@@ -1946,7 +1965,7 @@ void loop() {
         display.setCursor(8, 1);
         display.print(P("B: off  "));
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        if ( last_car_b_state == STATE_A ) 
+        if ( last_car_b_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_B;
       }
       break;
