@@ -148,6 +148,7 @@
 #define BOTH                    0
 #define CAR_A                   1
 #define CAR_B                   2
+#define DEFAULT_TIEBREAK        CAR_A
 
 // Don't use 0 or 1 because that's the value of LOW and HIGH.
 #define HALF                    3
@@ -412,7 +413,10 @@ Timezone dst(summer, winter);
 char p_buffer[96];
 #define P(str) (strcpy_P(p_buffer, PSTR(str)), p_buffer)
 
-#define VERSION "2.3.1 (EVSE)"
+// HW version
+#define HW_VERSION "2.3.1"
+// SW version
+#define SW_VERSION "2.3.2"
 
 LiquidTWI2 display(LCD_I2C_ADDR, 1);
 
@@ -840,8 +844,8 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
         // We transitioned from C/D to B. That means we're passing the batton
         // to the other car, if they want it.
         if (their_state == STATE_B) {
-          setPilot(them, FULL);
           setPilot(us, HIGH);
+          setPilot(them, FULL);
           EEPROM.write(EEPROM_LOC_CAR, them);
           display.setCursor((them == CAR_A)?0:8, 1);
           display.print((them == CAR_A)?"A":"B");
@@ -876,7 +880,7 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
             return;
           }
           // But if it IS us, then clear the tiebreak.
-          if (sequential_mode_tiebreak == us) {
+          if (sequential_mode_tiebreak == us || ( sequential_mode_tiebreak == DUNNO && us == DEFAULT_TIEBREAK) ) {
             sequential_mode_tiebreak = DUNNO;
             setPilot(us, FULL);
             sequential_pilot_timeout = millis();
@@ -1579,7 +1583,7 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
 #endif
 
-  log(LOG_DEBUG, P("Starting v%s"), VERSION);
+  log(LOG_DEBUG, P("Starting HW:%s SW:%s"), HW_VERSION, SW_VERSION);
   
   InitTimersSafe();
   
@@ -1588,9 +1592,12 @@ void setup() {
   display.setBacklight(WHITE);
   display.clear();
   display.setCursor(0, 0);
-  display.print(P("J1772 Hydra"));
+  display.print(P("J1772 Hydra *DL*"));
   display.setCursor(0, 1);
-  display.print(P(VERSION));
+  display.print(P("HW:"));
+  display.print(P(HW_VERSION));
+  display.print(P("SW:"));
+  display.print(P(SW_VERSION));
 
   pinMode(GFI_PIN, INPUT);
   pinMode(GFI_TEST_PIN, OUTPUT);
