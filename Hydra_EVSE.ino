@@ -331,7 +331,8 @@ event_type events[EVENT_COUNT];
 // The location in EEPROM to save the operating mode
 #define EEPROM_LOC_MODE 0
 // The location in EEPROM to save the (sequential mode) starting car
-#define EEPROM_LOC_CAR 1
+//#define EEPROM_LOC_CAR 1
+
 // The location in EEPROM to save the maximum current (in amps)
 #define EEPROM_LOC_MAX_AMPS 2
 // The location in EEPROM of the selected timezone
@@ -839,7 +840,6 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
       if (their_state == STATE_B)
       {
           setPilot(them, FULL);
-          EEPROM.write(EEPROM_LOC_CAR, them);
           display.setCursor((them == CAR_A)?0:8, 1);
           display.print((them == CAR_A)?"A":"B");
           display.print(P(": off  "));
@@ -858,9 +858,11 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
         // We transitioned from C/D to B. That means we're passing the batton
         // to the other car, if they want it and not marked "done" yet.
         if (their_state == STATE_B) {
-          setPilot(us, HIGH);
-          if ( !them_done ) setPilot(them, FULL);
-          EEPROM.write(EEPROM_LOC_CAR, them);
+          if ( ! them_done) { 
+            // flip only if they are not done yet, otherwise wait for pilot timeout before we do again.
+            setPilot(us, HIGH);
+            setPilot(them, FULL);
+          }
           display.setCursor((them == CAR_A)?0:8, 1);
           display.print((them == CAR_A)?"A":"B");
           if (them_done) display.print(P(": done ")); else display.print(P(": off  "));
@@ -884,7 +886,6 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
           us_done = false;
           them_done = false;
           sequential_pilot_timeout = 0;
-          EEPROM.write(EEPROM_LOC_CAR, us);
           display.setCursor((us == CAR_A)?0:8, 1);
           display.print((us == CAR_A)?"A":"B");
           display.print(P(": off  "));
@@ -894,14 +895,13 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
           // If it's not us, then we simply ignore this transition entirely. The other car will wind up in this same place,
           // we'll turn their pilot on, and then clear the tiebreak. Next time we roll through, we'll go into the other
           // half of this if/else and we'll get the "wait" display
-          if (sequential_mode_tiebreak != us && sequential_mode_tiebreak != DUNNO) {
+          if (sequential_mode_tiebreak != us ) {
             return;
           }
           // But if it IS us, then clear the tiebreak.
-          if (!us_done && (sequential_mode_tiebreak == us || ( sequential_mode_tiebreak == DUNNO && us == DEFAULT_TIEBREAK))) {
+          if (!us_done && (sequential_mode_tiebreak == us )) {
             setPilot(us, FULL);
             sequential_pilot_timeout = millis();
-            EEPROM.write(EEPROM_LOC_CAR, us);
             display.setCursor((us == CAR_A)?0:8, 1);
             display.print((us == CAR_A)?"A":"B");
             display.print(P(": off  "));
@@ -1441,7 +1441,7 @@ void doMenu(boolean initialize) {
       case MENU_OPERATING_MODE:
         operatingMode = menu_item;
         EEPROM.write(EEPROM_LOC_MODE, operatingMode);
-        EEPROM.write(EEPROM_LOC_CAR, 0xff); // undefined
+//        EEPROM.write(EEPROM_LOC_CAR, 0xff); // undefined
         break;
       case MENU_CURRENT_AVAIL:
         max_current_amps = currentMenuChoices[menu_item];
@@ -1663,11 +1663,8 @@ void setup() {
     operatingMode = DEFAULT_MODE;
     EEPROM.write(EEPROM_LOC_MODE, operatingMode);
   }
-  if (operatingMode == MODE_SEQUENTIAL) {
-    sequential_mode_tiebreak = EEPROM.read(EEPROM_LOC_CAR);
-    if (sequential_mode_tiebreak != CAR_A && sequential_mode_tiebreak != CAR_B)
-      sequential_mode_tiebreak = DUNNO;
-  }
+  sequential_mode_tiebreak = DEFAULT_TIEBREAK;
+  
   unsigned int max_current_amps = EEPROM.read(EEPROM_LOC_MAX_AMPS);
   // Make sure that the saved value is one of the choices in the menu
   boolean found = false;
@@ -1834,7 +1831,7 @@ void loop() {
         // remember which car was active
         if (pilot_state_a == FULL) sequential_mode_tiebreak = CAR_A;
         else if (pilot_state_b == FULL) sequential_mode_tiebreak = CAR_B;
-        else sequential_mode_tiebreak = DUNNO;
+        else sequential_mode_tiebreak = DEFAULT_TIEBREAK;
       }
       // Turn off both pilots
       setPilot(CAR_A, HIGH);
@@ -1913,11 +1910,14 @@ void loop() {
           setPilot(CAR_B, FULL);
       }
       if (paused && car_a_state == STATE_B) {
-        display.setCursor(0, 1);
-        display.print(P("A: off  "));
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
         if ( last_car_a_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_A;
+        display.setCursor(0, 1);
+        if ( operatingMode == MODE_SEQUENTIAL) 
+          display.print(P("A: off* "));
+        else 
+          display.print(P("A: off  "));
       }
       break;
     }
@@ -1962,11 +1962,14 @@ void loop() {
           setPilot(CAR_A, FULL);
       }
       if (paused && car_b_state == STATE_B) {
-        display.setCursor(8, 1);
-        display.print(P("B: off  "));
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
         if ( last_car_b_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_B;
+        display.setCursor(8, 1);
+        if ( operatingMode == MODE_SEQUENTIAL) 
+          display.print(P("A: off* "));
+        else 
+          display.print(P("A: off  "));
       }
       break;
     }
