@@ -88,3 +88,9 @@ HARDWARE
 You can buy quick kits and assembled boards at http://store.geppettoelectronics.com/
 
 The boards can be ordered from OSHPark at http://oshpark.com/profiles/nsayer if you want to build your own.
+
+EVSE
+-------
+This repository focuses on additions to Hydra EVSE only. Check out the [release notes](ReleaseNotes.md) for 
+the specific additions.
+
