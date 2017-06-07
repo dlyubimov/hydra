@@ -1234,7 +1234,8 @@ void doClockMenu(boolean initialize) {
       if (enable_dst) toSet = dst.toUTC(toSet);
       setTime(toSet);
       RTC.set(toSet);
-      doMenuFunc = doMenu; // go up
+      doMenuFunc = doMenu; // exit
+      inMenu = false;
       display.clear();
       return;
     }
@@ -1308,14 +1309,15 @@ void calib_struct::doMenu(boolean initialize) {
 #define MAX_ITEMS 4
   unsigned int event = checkEvent();
   char* carSymb = (menuItem & 1) == 0 ? "A" : "B";
-  char& amm((menuItem & 1) == 0 ? amm_a : amm_b);
-  char& pilot((menuItem & 1) == 0 ? pilot_a : pilot_b);
   char str[17];
   if (initialize) {
     display.clear();
     menuItem = 0;
     event = EVENT_SHORT_PUSH;
   } else {
+    
+    char& amm((menuItem & 1) == 0 ? amm_a : amm_b);
+    char& pilot((menuItem & 1) == 0 ? pilot_a : pilot_b);
     
     switch (event ) {
       case EVENT_SHORT_PUSH:
@@ -1327,16 +1329,23 @@ void calib_struct::doMenu(boolean initialize) {
         }
         break;
       case EVENT_LONG_PUSH:
-        display.clear();
         menuItem++;
+        display.clear();
         if ( menuItem >= MAX_ITEMS) {
           eepromWrite();
           doMenuFunc = ::doMenu;
+          inMenu = false; // exit completely all the way
+          return;
         }
-        return;
+        break;
+      default: return;
     }
   }
+
   // drawing
+  char& amm((menuItem & 1) == 0 ? amm_a : amm_b);
+  char& pilot((menuItem & 1) == 0 ? pilot_a : pilot_b);
+  
   switch (menuItem) {
     case 0:
     case 1:
@@ -1423,7 +1432,8 @@ void doEventMenu(boolean initialize) {
   }
   if (event == EVENT_LONG_PUSH) {
     if (editCursor == 0 && editEvent == EVENT_COUNT) {
-      doMenuFunc = doMenu; // go up
+      doMenuFunc = doMenu; // exit
+      inMenu = false;
       display.clear();
       return;
     }
