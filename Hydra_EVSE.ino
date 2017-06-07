@@ -912,7 +912,10 @@ void sequential_mode_transition(unsigned int us, unsigned int car_state) {
         // Either they are in state C/D or they're in state B and we lost the tiebreak.
         display.setCursor((us == CAR_A)?0:8, 1);
         display.print((us == CAR_A)?"A":"B");
-        if ( us_done) display.print(P(": done ")); else display.print(P(": wait "));
+        if ( us_done) 
+          display.print(P(": done ")); 
+        else 
+          display.print(P(": wait "));
       }
       break;
     case STATE_C:
@@ -2011,14 +2014,22 @@ void loop() {
         setPilot(CAR_B, FULL);
         sequential_pilot_timeout = now;
         display.setCursor(0, 1);
-        display.print(P("A: wait B: off  "));
+        if ( seq_car_a_done ) 
+          display.print(P("A: done "));
+        else 
+          display.print(P("A: wait "));
+        display.print(P("B: off  "));
       } else if (pilot_state_b == FULL) {
         log(LOG_INFO, P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
         setPilot(CAR_B, HIGH);
         setPilot(CAR_A, FULL);
         sequential_pilot_timeout = now;
         display.setCursor(0, 1);
-        display.print(P("A: off  B: wait "));
+        display.print(P("A: off  "));
+        if ( seq_car_b_done ) 
+          display.print(P("B: done "));
+        else 
+          display.print(P("B: wait "));
       }
     }
   }
