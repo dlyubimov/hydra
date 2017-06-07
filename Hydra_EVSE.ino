@@ -27,6 +27,12 @@
 #include <DS1307RTC.h>
 #include <Timezone.h>
 
+// HW version
+#define HW_VERSION "2.3.1"
+// SW version
+#define SW_VERSION "2.3.5"
+
+
 #define LCD_I2C_ADDR 0x20 // for adafruit shield or backpack
 
 // By historical accident, car B is actually
@@ -413,11 +419,6 @@ Timezone dst(summer, winter);
 // strings that are then used in snprintf statements that themselves use this macro.
 char p_buffer[96];
 #define P(str) (strcpy_P(p_buffer, PSTR(str)), p_buffer)
-
-// HW version
-#define HW_VERSION "2.3.1"
-// SW version
-#define SW_VERSION "2.3.4"
 
 LiquidTWI2 display(LCD_I2C_ADDR, 1);
 
