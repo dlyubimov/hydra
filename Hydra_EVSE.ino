@@ -1850,6 +1850,11 @@ void loop() {
     }
     paused = true;
   } else {
+    // reset car states if unpaused so that initial transitions may run on unpause for any plugged cars.
+    if ( paused ) {
+      last_car_a_state = DUNNO;
+      last_car_b_state = DUNNO;
+    }
     paused = false;
   }
 
@@ -1899,6 +1904,7 @@ void loop() {
         // We're paused. We will fix up the display ourselves.
         display.setCursor(0, 1);
         display.print(P("A: ---  "));
+        last_car_a_state = car_a_state;
       }
       // fall through...
     case STATE_B:
@@ -1912,8 +1918,10 @@ void loop() {
       }
       if (paused && car_a_state == STATE_B) {
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        if ( last_car_a_state != STATE_B ) 
+        if ( last_car_a_state == STATE_A ) {
           sequential_mode_tiebreak = CAR_A;
+          last_car_a_state = STATE_B;
+        }
         display.setCursor(0, 1);
         if ( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A) 
           display.print(P("A: off* "));
@@ -1951,6 +1959,7 @@ void loop() {
         // We're paused. We will fix up the display ourselves.
         display.setCursor(8, 1);
         display.print(P("B: ---  "));
+        last_car_b_state = car_b_state;
       }
       // fall through...
     case STATE_B:
@@ -1964,8 +1973,15 @@ void loop() {
       }
       if (paused && car_b_state == STATE_B) {
         // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        if ( last_car_b_state != STATE_B ) 
+        // this will not engage if the state ws "DUNNO" which i guess what it is going to be after just
+        // entering pause or powering up. But i cannot use from DUNNO transition here since it may also be 
+        // just entering the pause, in which case it will always reset the tiebreak to B no matter what.
+        // So resetting priority would require unplug-plug and not just pause-then-plug. It should be ok
+        // though.
+        if ( last_car_b_state == STATE_A ) {
           sequential_mode_tiebreak = CAR_B;
+          last_car_b_state = STATE_B;
+        }
         display.setCursor(8, 1);
         if ( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_B) 
           display.print(P("B: off* "));
