@@ -1915,7 +1915,7 @@ void loop() {
         if ( last_car_a_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_A;
         display.setCursor(0, 1);
-        if ( operatingMode == MODE_SEQUENTIAL) 
+        if ( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A) 
           display.print(P("A: off* "));
         else 
           display.print(P("A: off  "));
@@ -1967,10 +1967,10 @@ void loop() {
         if ( last_car_b_state != STATE_B ) 
           sequential_mode_tiebreak = CAR_B;
         display.setCursor(8, 1);
-        if ( operatingMode == MODE_SEQUENTIAL) 
-          display.print(P("A: off* "));
+        if ( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_B) 
+          display.print(P("B: off* "));
         else 
-          display.print(P("A: off  "));
+          display.print(P("B: off  "));
       }
       break;
     }
