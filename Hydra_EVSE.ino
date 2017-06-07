@@ -358,8 +358,6 @@ static unsigned char calib_struct::menuItem;
 
 // The location in EEPROM to save the operating mode
 #define EEPROM_LOC_MODE 0
-// The location in EEPROM to save the (sequential mode) starting car
-//#define EEPROM_LOC_CAR 1
 
 // The location in EEPROM to save the maximum current (in amps)
 #define EEPROM_LOC_MAX_AMPS 2
@@ -375,7 +373,7 @@ static unsigned char calib_struct::menuItem;
 #define EEPROM_CALIB (EEPROM_EVENT_BASE + EVENT_COUNT * sizeof(event_struct))
 
 // current tail in EEPROM
-#define EEPROM_END (EEPROM_CALIB_PILOT + sizeof(calib_type))
+#define EEPROM_END (EEPROM_CALIB + sizeof(calib_type))
 
 
 // menu 0: operating mode
@@ -814,7 +812,7 @@ static inline unsigned long ulong_sqrt(unsigned long in) {
 
 unsigned long readCurrent(unsigned int car) {
   unsigned int car_pin = (car == CAR_A) ? CAR_A_CURRENT_PIN : CAR_B_CURRENT_PIN;
-  unsigned char calib_amm = car == CAR_A ? calib.amm_a : calib.amm_b;
+  char calib_amm = car == CAR_A ? calib.amm_a : calib.amm_b;
   unsigned long sum = 0;
   unsigned int zero_crossings = 0;
   unsigned long last_zero_crossing_time = 0, now_ms;
@@ -1501,7 +1499,6 @@ void doCalibMenu(boolean initialize) { calib.doMenu(initialize); }
 void calib_struct::doMenu(boolean initialize) {
 #define MAX_ITEMS 4
   unsigned int event = checkEvent();
-  char* carSymb = (menuItem & 1) == 0 ? "A" : "B";
   char str[17];
   if (initialize) {
     display.clear();
@@ -1516,14 +1513,13 @@ void calib_struct::doMenu(boolean initialize) {
       case EVENT_SHORT_PUSH:
         switch (menuItem)  {
           case 0: 
-          case 1: amm++; if (amm > CALIB_AMM_MAX) amm = -CALIB_AMM_MAX; break;
+          case 1: if ( ++amm > CALIB_AMM_MAX) amm = -CALIB_AMM_MAX; break;
           case 2: 
-          case 3: pilot--; if ( pilot < -CALIB_PILOT_MAX) pilot = 0; break;
+          case 3: if ( --pilot < -CALIB_PILOT_MAX) pilot = 0; break;
         }
         break;
       case EVENT_LONG_PUSH:
         menuItem++;
-        display.clear();
         if ( menuItem >= MAX_ITEMS) {
           eepromWrite();
           doMenuFunc = ::doMenu;
@@ -1536,29 +1532,29 @@ void calib_struct::doMenu(boolean initialize) {
   }
 
   // drawing
+  char* carSymb = (menuItem & 1) == 0 ? "A" : "B";
   char& amm((menuItem & 1) == 0 ? amm_a : amm_b);
   char& pilot((menuItem & 1) == 0 ? pilot_a : pilot_b);
   
   switch (menuItem) {
     case 0:
     case 1:
-
-      display.setCursor(0, 0);
-      display.write(P("Ammeter"));
+      display.clear();
+      display.print(P("Ammeter"));
 
       display.setCursor(0, 1);
       snprintf(str, sizeof(str), P(" Car %s: %s0.%d"), carSymb, amm < 0 ? "-" : "+", abs(amm));
-      display.write(str);
+      display.print(str);
       break;
 
     case 2: 
     case 3:
-      display.setCursor(0, 0);
-      display.write(P("Pilot derate"));
+      display.clear();
+      display.print(P("Pilot derate"));
 
       display.setCursor(0, 1);
       snprintf(str, sizeof(str), P(" Car %s: %d%%"), carSymb, (int)pilot);
-      display.write(str);
+      display.print(str);
       break;
   }
 }
@@ -1585,7 +1581,6 @@ void doMenu(boolean initialize) {
       case MENU_OPERATING_MODE:
         operatingMode = menu_item;
         EEPROM.write(EEPROM_LOC_MODE, operatingMode);
-//        EEPROM.write(EEPROM_LOC_CAR, 0xff); // undefined
         break;
       case MENU_CURRENT_AVAIL:
         max_current_amps = currentMenuChoices[menu_item];
@@ -1914,7 +1909,7 @@ void loop() {
   wdt_reset();
 
   if (inMenu) {
-    doMenu(false);
+    doMenuFunc(false);
     return;
   }
   
