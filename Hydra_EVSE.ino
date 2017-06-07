@@ -846,7 +846,10 @@ unsigned long readCurrent(unsigned int car) {
     case 3:
       // The answer is the square root of the mean of the squares.
       // But additionally, that value must be scaled to a real current value.
-      return ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR + calib_amm * 100;
+      sum = ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR;
+      // Only apply calibration on readings meaningfully high.
+      if ( sum > 5000 ) sum += 100 * calib_amm;
+      return sum;
     }
   }
   // ran out of time. Assume that it's simply not oscillating any. 
