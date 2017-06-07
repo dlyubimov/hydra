@@ -30,7 +30,7 @@
 // HW version
 #define HW_VERSION "2.3.1"
 // SW version
-#define SW_VERSION "2.3.5"
+#define SW_VERSION "2.4.0"
 
 
 #define LCD_I2C_ADDR 0x20 // for adafruit shield or backpack
@@ -727,14 +727,17 @@ void setPilot(unsigned int car, unsigned int which) {
   log(LOG_DEBUG, P("Setting %s pilot to %s"), car_str(car), logic_str(which));
   // set the outgoing pilot for the given car to either HALF state, FULL state, or HIGH.
   int pin;
+  char pilot_derate;
   switch(car) {
     case CAR_A:
       pin = CAR_A_PILOT_OUT_PIN;
       pilot_state_a = which;
+      pilot_derate = calib.pilot_a;
       break;
     case CAR_B:
       pin = CAR_B_PILOT_OUT_PIN;
       pilot_state_b = which;
+      pilot_derate = calib.pilot_b;
       break;
     default: return;
   }
@@ -746,6 +749,13 @@ void setPilot(unsigned int car, unsigned int which) {
   else {
     unsigned long ma = incomingPilotMilliamps;
     if (which == HALF) ma /= 2;
+    // Calibrate 
+    if (pilot_derate != 0) {
+      // pilot_derate is usally negative percentages (0, -1, -2 .. -CALIB_PILOT_MAX)
+      ma = ma * (100 + pilot_derate ) / 100;
+      // but no less than the minimum.
+      if (ma < 6000) ma = 6000; 
+    }
     if (ma > MAXIMUM_OUTLET_CURRENT) ma = MAXIMUM_OUTLET_CURRENT;
     unsigned int val = MAtoPwm(ma);
     log(LOG_TRACE, P("Pin %d to PWM %d"), pin, val);
@@ -799,10 +809,12 @@ static inline unsigned long ulong_sqrt(unsigned long in) {
   // Removing floating point saves us almost 1K of flash.
   for(out = 1; out*out <= in; out++) ;
   return out - 1;
+//  return (unsigned long)sqrt((float)in);
 }
 
 unsigned long readCurrent(unsigned int car) {
   unsigned int car_pin = (car == CAR_A) ? CAR_A_CURRENT_PIN : CAR_B_CURRENT_PIN;
+  unsigned char calib_amm = car == CAR_A ? calib.amm_a : calib.amm_b;
   unsigned long sum = 0;
   unsigned int zero_crossings = 0;
   unsigned long last_zero_crossing_time = 0, now_ms;
@@ -834,7 +846,7 @@ unsigned long readCurrent(unsigned int car) {
     case 3:
       // The answer is the square root of the mean of the squares.
       // But additionally, that value must be scaled to a real current value.
-      return ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR;
+      return ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR + calib_amm * 100;
     }
   }
   // ran out of time. Assume that it's simply not oscillating any. 
