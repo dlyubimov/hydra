@@ -187,7 +187,7 @@ void persisted_struct::reset() {
 /////////////////////////////////////////
 
 
-void log(unsigned int level, const char * fmt_str, ...) {
+void logImpl(unsigned int level, const char * fmt_str, ...) {
 #if SERIAL_LOG_LEVEL > 0
   if (level > SERIAL_LOG_LEVEL) return;
   char buf[96]; // Danger, Will Robinson!
@@ -337,7 +337,7 @@ void displayStatus(unsigned int status) {
   display.print(carLetter); // 1
   display.print(':');  // 2
 
-  log(LOG_DEBUG, P("status: %x, CAR:%c, status bits: %x, status mask: %x."), status, carLetter, status & STATUS_MASK, STATUS_MASK);
+  logDebug(P("status: %x, CAR:%c, status bits: %x, status mask: %x."), status, carLetter, status & STATUS_MASK, STATUS_MASK);
 
   switch ( status & STATUS_MASK) { // 7
     case STATUS_UNPLUGGED: display.print(P(" --- ")); break;
@@ -403,7 +403,7 @@ void error(unsigned int status) {
   //  }
   //
   displayStatus(status);
-  log(LOG_INFO, P("Error %c on %s"), errLetter(status), car_str(car));
+  logInfo(P("Error %c on %s"), errLetter(status), car_str(car));
 }
 
 void gfi_trigger() {
@@ -422,7 +422,7 @@ void setRelay(unsigned int car, unsigned int state) {
     // We're transitioning from no car to one car - insert a GFI self test.
     gfiSelfTest();
   }
-  log(LOG_DEBUG, P("Setting %s relay to %s"), car_str(car), logic_str(state));
+  logDebug(P("Setting %s relay to %s"), car_str(car), logic_str(state));
   switch (car) {
     case CAR_A:
       if (relay_state_a == state) return; // did nothing.
@@ -465,7 +465,7 @@ static inline boolean isCarCharging(unsigned int car) {
 // state E. HALF means that the other car is charging, so we only can have half power.
 
 void setPilot(unsigned int car, unsigned int which) {
-  log(LOG_DEBUG, P("Setting %s pilot to %s"), car_str(car), logic_str(which));
+  logDebug(P("Setting %s pilot to %s"), car_str(car), logic_str(which));
   // set the outgoing pilot for the given car to either HALF state, FULL state, or HIGH.
   int pin;
   char pilot_derate;
@@ -484,7 +484,7 @@ void setPilot(unsigned int car, unsigned int which) {
   }
   if (which == LOW || which == HIGH) {
     // This is what the pwm library does anyway.
-    log(LOG_TRACE, P("Pin %d to digital %d"), pin, which);
+    logTrace(P("Pin %d to digital %d"), pin, which);
     digitalWrite(pin, which);
   }
   else {
@@ -499,7 +499,7 @@ void setPilot(unsigned int car, unsigned int which) {
     }
     if (ma > MAXIMUM_OUTLET_CURRENT) ma = MAXIMUM_OUTLET_CURRENT;
     unsigned int val = MAtoPwm(ma);
-    log(LOG_TRACE, P("Pin %d to PWM %d"), pin, val);
+    logTrace(P("Pin %d to PWM %d"), pin, val);
     pwmWrite(pin, val);
   }
 }
@@ -520,7 +520,7 @@ int checkState(unsigned int car) {
     count++;
   }
 
-  log(LOG_TRACE, P("%s high %u low %u count %lu"), car_str(car), high, low, count);
+  logTrace(P("%s high %u low %u count %lu"), car_str(car), high, low, count);
 
   // If the pilot low was below zero, then that means we must have
   // been oscillating. If we were, then perform the diode check.
@@ -866,7 +866,7 @@ unsigned int checkTimer() {
 }
 
 unsigned int checkEvent() {
-  log(LOG_TRACE, P("Checking for button event"));
+  logTrace(P("Checking for button event"));
   if (button_debounce_time != 0 && millis() - button_debounce_time < BUTTON_DEBOUNCE_INTERVAL) {
     // debounce is in progress
     return EVENT_NONE;
@@ -875,16 +875,16 @@ unsigned int checkEvent() {
     button_debounce_time = 0;
   }
   unsigned int buttons = display.readButtons();
-  log(LOG_TRACE, P("Buttons %d"), buttons);
+  logTrace(P("Buttons %d"), buttons);
   if ((buttons & BUTTON) != 0) {
-    log(LOG_TRACE, P("Button is down"));
+    logTrace(P("Button is down"));
     // Button is down
     if (button_press_time == 0) { // this is the start of a press.
       button_debounce_time = button_press_time = millis();
     }
     return EVENT_NONE; // We don't know what this button-push is going to be yet
   } else {
-    log(LOG_TRACE, P("Button is up"));
+    logTrace(P("Button is up"));
     // Button released
     if (button_press_time == 0) return EVENT_NONE; // It wasn't down anyway.
     // We are now ending a button-push. First, start debuncing.
@@ -892,10 +892,10 @@ unsigned int checkEvent() {
     unsigned long button_pushed_time = button_debounce_time - button_press_time;
     button_press_time = 0;
     if (button_pushed_time > BUTTON_LONG_START) {
-      log(LOG_DEBUG, P("Button long-push event"));
+      logDebug(P("Button long-push event"));
       return EVENT_LONG_PUSH;
     } else {
-      log(LOG_DEBUG, P("Button short-push event"));
+      logDebug(P("Button short-push event"));
       return EVENT_SHORT_PUSH;
     }
   }
@@ -919,7 +919,7 @@ static void die() {
   // make sure both relays are off
   setRelay(CAR_A, LOW);
   setRelay(CAR_B, LOW);
-  log(LOG_INFO, P("UNIT IS DEAD."));
+  logInfo(P("UNIT IS DEAD."));
   // and goodnight
   do {
     wdt_reset(); // keep petting the dog, but do nothing else.
@@ -1172,7 +1172,7 @@ void doEventMenu(boolean initialize) {
       if (editMeridian == 0 && saveHour == 12) saveHour = 0;
       if (editMeridian == 1 && saveHour != 12) saveHour += 12;
 #endif
-      log(LOG_DEBUG, P("Saving event %d - %d:%d dow_mask %x event %d"), editEvent, saveHour, editMinute, editDOW, editType);
+      logDebug(P("Saving event %d - %d:%d dow_mask %x event %d"), editEvent, saveHour, editMinute, editDOW, editType);
       events[editEvent].hour = saveHour;
       events[editEvent].minute = editMinute;
       events[editEvent].dow_mask = editDOW;
@@ -1520,7 +1520,7 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
 #endif
 
-  log(LOG_DEBUG, P("Starting HW:%s SW:%s"), HW_VERSION, SW_VERSION);
+  logDebug(P("Starting HW:%s SW:%s"), HW_VERSION, SW_VERSION);
 
   InitTimersSafe();
 
@@ -1588,12 +1588,12 @@ void setup() {
 
   boolean success = SetPinFrequencySafe(CAR_A_PILOT_OUT_PIN, 1000);
   if (!success) {
-    log(LOG_INFO, P("SetPinFrequency for car A failed!"));
+    logInfo(P("SetPinFrequency for car A failed!"));
     display.setBacklight(YELLOW);
   }
   success = SetPinFrequencySafe(CAR_B_PILOT_OUT_PIN, 1000);
   if (!success) {
-    log(LOG_INFO, P("SetPinFrequency for car B failed!"));
+    logInfo(P("SetPinFrequency for car B failed!"));
     display.setBacklight(BLUE);
   }
   // In principle, neither of the above two !success conditions should ever
@@ -1651,7 +1651,7 @@ void loop() {
   }
 
   if (gfiTriggered) {
-    log(LOG_INFO, P("GFI fault detected"));
+    logInfo(P("GFI fault detected"));
     error(BOTH | STATUS_ERR | STATUS_ERR_G);
     gfiTriggered = false;
   }
@@ -1676,21 +1676,21 @@ void loop() {
   if (relay_change_time == 0) {
     // If the power's off but there's still a voltage, that's a stuck relay
     if ((digitalRead(CAR_A_RELAY_TEST) == HIGH) && (relay_state_a == LOW)) {
-      log(LOG_INFO, P("Relay fault detected on car A"));
+      logInfo(P("Relay fault detected on car A"));
       error(CAR_A | STATUS_ERR | STATUS_ERR_R);
     }
     if ((digitalRead(CAR_B_RELAY_TEST) == HIGH) && (relay_state_b == LOW)) {
-      log(LOG_INFO, P("Relay fault detected on car B"));
+      logInfo(P("Relay fault detected on car B"));
       error(CAR_B | STATUS_ERR | STATUS_ERR_R);
     }
 #ifdef RELAY_TESTS_GROUND
     // If the power's on, but there's no voltage, that's a ground impedance failure
     if ((digitalRead(CAR_A_RELAY_TEST) == LOW) && (relay_state_a == HIGH)) {
-      log(LOG_INFO, P("Ground failure detected on car A"));
+      logInfo(P("Ground failure detected on car A"));
       error(CAR_B | STATUS_ERR | STATUS_ERR_F);
     }
     if ((digitalRead(CAR_B_RELAY_TEST) == LOW) && (relay_state_b == HIGH)) {
-      log(LOG_INFO, P("Ground failure detected on car B"));
+      logInfo(P("Ground failure detected on car B"));
       error(CAR_B | STATUS_ERR | STATUS_ERR_F);
     }
 #endif
@@ -1739,7 +1739,7 @@ void loop() {
       car_b_request_time = 0;
       seq_car_a_done = false;
       seq_car_b_done = false;
-      log(LOG_INFO, P("Pausing."));
+      logInfo(P("Pausing."));
     }
     paused = true;
   } else {
@@ -1792,7 +1792,7 @@ void loop() {
           // If not, clear the error state. The next time through
           // will take us back to state A.
           last_car_a_state = DUNNO;
-          log(LOG_INFO, P("Car A disconnected, clearing error"));
+          logInfo(P("Car A disconnected, clearing error"));
         } else {
           // We're paused. We will fix up the display ourselves.
           displayStatus(CAR_A | STATUS_UNPLUGGED);
@@ -1826,7 +1826,7 @@ void loop() {
     }
   } else if (car_a_state != last_car_a_state) {
     if (last_car_a_state != DUNNO)
-      log(LOG_INFO, P("Car A state transition: %s->%s."), state_str(last_car_a_state), state_str(car_a_state));
+      logInfo(P("Car A state transition: %s->%s."), state_str(last_car_a_state), state_str(car_a_state));
     switch (operatingMode) {
       case MODE_SHARED:
         shared_mode_transition(CAR_A, car_a_state);
@@ -1848,7 +1848,7 @@ void loop() {
           // If not, clear the error state. The next time through
           // will take us back to state A.
           last_car_b_state = DUNNO;
-          log(LOG_INFO, P("Car B disconnected, clearing error"));
+          logInfo(P("Car B disconnected, clearing error"));
         } else {
           // We're paused. We will fix up the display ourselves.
           displayStatus(CAR_B | STATUS_UNPLUGGED);
@@ -1888,7 +1888,7 @@ void loop() {
     }
   } else if (car_b_state != last_car_b_state) {
     if (last_car_b_state != DUNNO)
-      log(LOG_INFO, P("Car B state transition: %s->%s."), state_str(last_car_b_state), state_str(car_b_state));
+      logInfo(P("Car B state transition: %s->%s."), state_str(last_car_b_state), state_str(car_b_state));
     switch (operatingMode) {
       case MODE_SHARED:
         shared_mode_transition(CAR_B, car_b_state);
@@ -1902,7 +1902,7 @@ void loop() {
     unsigned long now = millis();
     if (now - sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT) {
       if (pilot_state_a == FULL) {
-        log(LOG_INFO, P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
+        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
         setPilot(CAR_A, HIGH);
         setPilot(CAR_B, FULL);
         sequential_pilot_timeout = now;
@@ -1915,7 +1915,7 @@ void loop() {
         displayStatus(CAR_B | STATUS_OFF );
         //        display.print(P("B: off  "));
       } else if (pilot_state_b == FULL) {
-        log(LOG_INFO, P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
+        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
         setPilot(CAR_B, HIGH);
         setPilot(CAR_A, FULL);
         sequential_pilot_timeout = now;
@@ -1935,8 +1935,8 @@ void loop() {
     unsigned long now = millis();
     if (now - last_state_log > STATE_LOG_INTERVAL) {
       last_state_log = now;
-      log(LOG_INFO, P("States: Car A, %s; Car B, %s"), state_str(last_car_a_state), state_str(last_car_b_state));
-      log(LOG_INFO, P("Power available %lu mA"), incomingPilotMilliamps);
+      logInfo(P("States: Car A, %s; Car B, %s"), state_str(last_car_a_state), state_str(last_car_b_state));
+      logInfo(P("Power available %lu mA"), incomingPilotMilliamps);
     }
   }
 
@@ -1956,7 +1956,7 @@ void loop() {
       unsigned long now = millis();
       if (now - last_current_log_car_a > CURRENT_LOG_INTERVAL) {
         last_current_log_car_a = now;
-        log(LOG_INFO, P("Car A current draw %lu mA"), car_a_draw);
+        logInfo(P("Car A current draw %lu mA"), car_a_draw);
       }
     }
 
@@ -1996,7 +1996,7 @@ void loop() {
       unsigned long now = millis();
       if (now - last_current_log_car_b > CURRENT_LOG_INTERVAL) {
         last_current_log_car_b = now;
-        log(LOG_INFO, P("Car B current draw %lu mA"), car_b_draw);
+        logInfo(P("Car B current draw %lu mA"), car_b_draw);
       }
     }
 
@@ -2032,7 +2032,7 @@ void loop() {
   // *before* the time in question
   if (car_a_request_time != 0 && (millis() - car_a_request_time) > TRANSITION_DELAY) {
     // We've waited long enough.
-    log(LOG_INFO, P("Delayed transition completed on car A"));
+    logInfo(P("Delayed transition completed on car A"));
     car_a_request_time = 0;
     displayStatus(CAR_A | STATUS_ON );
     //    display.setCursor(0, 1);
@@ -2046,15 +2046,15 @@ void loop() {
       displayStatus( CAR_A | STATUS_OFF );
       //      display.setCursor(0, 1);
       //      display.print(P("A: off  "));
-      log(LOG_INFO, P("Power withdrawn after pause delay on car A"));
+      logInfo(P("Power withdrawn after pause delay on car A"));
     } else {
-      log(LOG_INFO, P("Power withdrawn after error delay on car A"));
+      logInfo(P("Power withdrawn after error delay on car A"));
     }
     if (isCarCharging(CAR_B) || last_car_b_state == STATE_B)
       setPilot(CAR_B, FULL);
   }
   if (car_b_request_time != 0 && (millis() - car_b_request_time) > TRANSITION_DELAY) {
-    log(LOG_INFO, P("Delayed transition completed on car B"));
+    logInfo(P("Delayed transition completed on car B"));
     // We've waited long enough.
     car_b_request_time = 0;
     displayStatus(CAR_B | STATUS_ON);
@@ -2069,9 +2069,9 @@ void loop() {
       displayStatus(CAR_B | STATUS_OFF);
       //      display.setCursor(8, 1);
       //      display.print(P("B: off  "));
-      log(LOG_INFO, P("Power withdrawn after pause delay on car B"));
+      logInfo(P("Power withdrawn after pause delay on car B"));
     } else
-      log(LOG_INFO, P("Power withdrawn after error delay on car B"));
+      logInfo(P("Power withdrawn after error delay on car B"));
     if (isCarCharging(CAR_A) || last_car_a_state == STATE_B)
       setPilot(CAR_A, FULL);
   }

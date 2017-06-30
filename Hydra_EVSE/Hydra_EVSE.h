@@ -34,7 +34,7 @@
 #define SW_VERSION "2.4.1"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-// #define UNIT_TESTS
+//#define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -263,6 +263,25 @@
 #define SERIAL_LOG_LEVEL LOG_NONE
 #endif
 
+#if LOG_INFO <= SERIAL_LOG_LEVEL
+#define logInfo(...) logImpl(LOG_INFO, __VA_ARGS__)
+#else
+#define logInfo(...)
+#endif
+
+#if LOG_DEBUG <= SERIAL_LOG_LEVEL
+#define logDebug(...) logImpl(LOG_DEBUG, __VA_ARGS__)
+#else
+#define logDebug(...)
+#endif
+
+#if LOG_TRACE <= SERIAL_LOG_LEVEL
+#define logTrace(...) logImpl(LOG_TRACE, __VA_ARGS__)
+#else
+#define logTrace(...)
+#endif
+
+
 #define SERIAL_BAUD_RATE 9600
 
 // in shared mode, two cars connected simultaneously will get 50% of the incoming pilot
@@ -409,7 +428,7 @@ struct persisted_struct {
 
 extern boolean inMenu;
 extern void doMenu(boolean);
-extern void log(unsigned int level, const char * fmt_str, ...);
+extern void logImpl(unsigned int level, const char * fmt_str, ...);
 DISPLAY_DECL(display);
 extern persisted_struct persisted;
 extern void Delay(unsigned int);

@@ -35,7 +35,7 @@ static void testEepromSetup() {
   persisted.eepromWrite();
   persisted_struct clone1;
   if (clone1.operatingMode != MODE_SEQUENTIAL) {
-    log(LOG_INFO, P("eeprom write/read UNIT FAIL (actual: %d)."), (int)clone1.operatingMode);
+    logInfo(P("eeprom write/read UNIT FAIL (actual: %d)."), (int)clone1.operatingMode);
     return;
   }
 
@@ -45,11 +45,11 @@ static void testEepromSetup() {
 
   persisted_struct clone2;
   if ( persisted.signature != PERSIST_SIG || clone2.signature != PERSIST_SIG || clone2.operatingMode != MODE_SHARED ) {
-    log(LOG_INFO, P("eeprom sig validation UNIT FAIL."));
+    logInfo(P("eeprom sig validation UNIT FAIL."));
     return;
   }
 
-  log(LOG_DEBUG, P("eeprom UNIT OK."));
+  logDebug(P("eeprom UNIT OK."));
 
 }
 
@@ -72,17 +72,17 @@ void testDisplayStatus() {
 
   char* msg = P("incorrect letter %c UNIT FAIL");
   if ( 'F' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_F) )
-    log(LOG_INFO, msg, 'F');
+    logInfo(msg, 'F');
   if ( 'O' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_O) )
-    log(LOG_INFO, msg, 'O');
+    logInfo(msg, 'O');
   if ( 'G' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_G) )
-    log(LOG_INFO, msg, 'G');
+    logInfo(msg, 'G');
   if ( 'T' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_T) )
-    log(LOG_INFO, msg, 'T');
+    logInfo(msg, 'T');
   if ( 'R' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_R) )
-    log(LOG_INFO, msg, 'R');
+    logInfo(msg, 'R');
   if ( 'E' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_E) )
-    log(LOG_INFO, msg, 'E');
+    logInfo(msg, 'E');
 
   testDS(P("A&B ERR G"), BOTH | STATUS_ERR | STATUS_ERR_G);
   testDS(P("A&B ERR F"), BOTH | STATUS_ERR | STATUS_ERR_F);
