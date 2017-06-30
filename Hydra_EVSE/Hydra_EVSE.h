@@ -330,9 +330,10 @@ extern char p_buffer[];
 
 struct car_struct {
   // CAR_A or CAR_B
-  unsigned int us, them;
-  unsigned int relay_pin, pilot_out_pin;
-  unsigned int relay_state;
+  unsigned int car;
+  car_struct& them; 
+  unsigned int relay_pin, pilot_out_pin, pilot_sense_pin, current_pin;
+  volatile unsigned int relay_state;
   unsigned int last_state;
   unsigned long overdraw_begin;
   unsigned long request_time;
@@ -342,10 +343,14 @@ struct car_struct {
   unsigned int pilot_state;
   unsigned long current_samples[ROLLING_AVERAGE_SIZE];
 
-  car_struct(unsigned int car, unsigned int relay_pin, unsigned int pilot_out_pin) :
-    us(car), them(car == CAR_A ? CAR_B : CAR_A),
+  car_struct(unsigned int car, int themOffset, unsigned int relay_pin, 
+  unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
+    car(car), 
+    them(*(this + themOffset)),
     relay_pin(relay_pin),
     pilot_out_pin(pilot_out_pin),
+    pilot_sense_pin(pilot_sense_pin),
+    current_pin(current_pin),
     last_state(DUNNO),
     relay_state(LOW),
     overdraw_begin(0),
@@ -362,6 +367,8 @@ struct car_struct {
   void shared_mode_transition(unsigned int car_state);
   void sequential_mode_transition(unsigned int car_state);
   boolean isCarCharging();
+  int checkState();
+  unsigned long readCurrent();
 };
 
 #define EVENT_COUNT 4

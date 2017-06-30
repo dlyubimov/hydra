@@ -4,7 +4,7 @@
 // With unit test unit we can use regular Arduino uno3 with kuman or some other shield.
 #include "KUMAN.h"
 
-#define HW_VERSION "231u"
+#define HW_VERSION "UNO 3 UT"
 
 #define DISPLAY_DEF(name) KUMAN name
 #define DISPLAY_DECL(name) extern KUMAN name

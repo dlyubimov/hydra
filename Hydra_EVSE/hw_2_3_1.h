@@ -22,7 +22,7 @@
 // Definitions of pins etc. related to a particular hardware
 
 // HW version
-#define HW_VERSION "231u"
+#define HW_VERSION "2.3.1"
 
 // 2.3.1 hardware display
 

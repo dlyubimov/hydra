@@ -32,9 +32,10 @@ static void testEepromSetup() {
 
   //read/write test
   persisted.operatingMode = MODE_SEQUENTIAL;
+  persisted.enable_dst = true;
   persisted.eepromWrite();
   persisted_struct clone1;
-  if (clone1.operatingMode != MODE_SEQUENTIAL) {
+  if (clone1.operatingMode != MODE_SEQUENTIAL || !clone1.enable_dst) {
     logInfo(P("eeprom write/read UNIT FAIL (actual: %d)."), (int)clone1.operatingMode);
     return;
   }
