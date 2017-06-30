@@ -31,7 +31,7 @@
 #include <Timezone.h>
 
 // SW version
-#define SW_VERSION "2.4.1"
+#define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
 //#define UNIT_TESTS
