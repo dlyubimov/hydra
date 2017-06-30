@@ -36,6 +36,9 @@
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
 #define UNIT_TESTS
 
+#define UINT_BITS (sizeof(unsigned int) << 3)
+#define ULONG_BITS (sizeof(unsigned long) << 3)
+
 // By historical accident, car B is actually
 // the lower pin number in most cases.
 //
@@ -107,15 +110,24 @@
 // display status to be combined with CAR_A, CAR_B, or BOTH
 #define STATUS_TIEBREAK         0x4
 
-// Mutually exclusive statuses
+// Mutually exclusive statuses -- bits 3, 4, 5
 #define STATUS_UNPLUGGED        (0x0u << 3)
 #define STATUS_OFF              (0x1u << 3)
 #define STATUS_ON               (0x2u << 3)
 #define STATUS_WAIT             (0x3u << 3)
 #define STATUS_DONE             (0x4u << 3)
 #define STATUS_ERR              (0x5u << 3)
-#define STATUS_MASK             ( -1u >> 16 - 4 << 3)
+// in Arduino, x >> -bits does not work like on Intel. need actually use the size of the int
+#define STATUS_MASK             ( -1u >> UINT_BITS - 3 << 3)
 
+// Next34 bits for error codes (bits 6, 7, 8 )
+#define STATUS_ERR_MASK         ( -1u >> UINT_BITS - 3 << 6)
+#define STATUS_ERR_F            ( 0x0u << 6 )
+#define STATUS_ERR_O            ( 0x1u << 6 )
+#define STATUS_ERR_G            ( 0x2u << 6 )
+#define STATUS_ERR_T            ( 0x3u << 6 )
+#define STATUS_ERR_R            ( 0x4u << 6 )
+#define STATUS_ERR_E            ( 0x5u << 6 )
 
 // Don't use 0 or 1 because that's the value of LOW and HIGH.
 #define HALF                    3
@@ -401,7 +413,8 @@ extern void log(unsigned int level, const char * fmt_str, ...);
 DISPLAY_DECL(display);
 extern persisted_struct persisted;
 extern void Delay(unsigned int);
-
+extern void displayStatus(unsigned int status);
+extern char errLetter(unsigned int status);
 
 
 #endif // ___HYDRA_EVSE_H___

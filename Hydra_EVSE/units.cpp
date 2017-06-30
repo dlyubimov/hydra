@@ -53,43 +53,6 @@ static void testEepromSetup() {
 
 }
 
-// Status is combination of (CAR_A or CAR_B or CAR_BOTH) | (one of STATUS_XXX) [ | STATUS_TIEBREAK ]
-void displayStatus(unsigned int status) {
-  unsigned int car = status & CAR_MASK;
-  int col;
-  char carLetter;
-  switch (car) {
-    case CAR_A: col = 0; carLetter = 'A'; break;
-    case CAR_B: col = 8; carLetter = 'B'; break;
-    default:
-      displayStatus( (status & ~CAR_MASK) | CAR_A);
-      displayStatus( (status & ~CAR_MASK) | CAR_B);
-      return;
-  }
-  //  display.setCursor(col,1);
-  //  for (int i = 0; i < 8; i++) display.print(' ');
-  display.setCursor(col, 1);
-  display.print(carLetter); // 1
-  display.print(P(": "));  // 3
-
-  log(LOG_DEBUG, P("status: %x, CAR:%c, status bits: %x, status mask: %x."), status, carLetter, status & STATUS_MASK, STATUS_MASK);
-  
-  switch ( status & STATUS_MASK) { // 7
-    case STATUS_UNPLUGGED: display.print(P("--- ")); break;
-    case  STATUS_OFF: display.print(P("off ")); break;
-    case  STATUS_ON: display.print(P("on  ")); break;
-    case  STATUS_WAIT: display.print(P("wait")); break;
-    case  STATUS_DONE: display.print(P("done")); break;
-    case  STATUS_ERR:
-    default: display.print(P("ERR ")); break;
-  }
-  display.print(" "); // 8
-  if ( (status & STATUS_TIEBREAK) != 0) {
-    display.setCursor(col + 6, 1);
-    display.print('*');
-  }
-
-}
 
 static void testDS(char* desc, unsigned int status) {
   display.clear();
@@ -99,12 +62,36 @@ static void testDS(char* desc, unsigned int status) {
 }
 
 void testDisplayStatus() {
-  testDS(P("A&B UNPL"),BOTH|STATUS_UNPLUGGED);
-  testDS(P("A&B off"),BOTH|STATUS_OFF);
-  testDS(P("B off tie"),CAR_B|STATUS_OFF|STATUS_TIEBREAK);
-  testDS(P("A&B on"),BOTH|STATUS_ON);
-  testDS(P("A&B done"),BOTH|STATUS_DONE);
-  testDS(P("A&B wait"),BOTH|STATUS_WAIT);
+  testDS(P("A&B UNPL"), BOTH | STATUS_UNPLUGGED);
+  testDS(P("A&B off"), BOTH | STATUS_OFF);
+  testDS(P("B off tie"), CAR_B | STATUS_OFF | STATUS_TIEBREAK);
+  testDS(P("A off tie"), CAR_A | STATUS_OFF | STATUS_TIEBREAK);
+  testDS(P("A&B on"), BOTH | STATUS_ON);
+  testDS(P("A&B done"), BOTH | STATUS_DONE);
+  testDS(P("A&B wait"), BOTH | STATUS_WAIT);
+
+  char* msg = P("incorrect letter %c UNIT FAIL");
+  if ( 'F' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_F) )
+    log(LOG_INFO, msg, 'F');
+  if ( 'O' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_O) )
+    log(LOG_INFO, msg, 'O');
+  if ( 'G' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_G) )
+    log(LOG_INFO, msg, 'G');
+  if ( 'T' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_T) )
+    log(LOG_INFO, msg, 'T');
+  if ( 'R' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_R) )
+    log(LOG_INFO, msg, 'R');
+  if ( 'E' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_E) )
+    log(LOG_INFO, msg, 'E');
+
+  testDS(P("A&B ERR G"), BOTH | STATUS_ERR | STATUS_ERR_G);
+  testDS(P("A&B ERR F"), BOTH | STATUS_ERR | STATUS_ERR_F);
+  testDS(P("A&B ERR T"), BOTH | STATUS_ERR | STATUS_ERR_T);
+  testDS(P("A&B ERR O"), BOTH | STATUS_ERR | STATUS_ERR_O);
+  testDS(P("A&B ERR E"), BOTH | STATUS_ERR | STATUS_ERR_E);
+  testDS(P("A&B ERR R"), BOTH | STATUS_ERR | STATUS_ERR_R);
+
+
 }
 
 
