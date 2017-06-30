@@ -328,6 +328,41 @@ extern char p_buffer[];
 #include "units.h"
 #endif
 
+struct car_struct {
+  // CAR_A or CAR_B
+  unsigned int us, them;
+  unsigned int relay_pin, pilot_out_pin;
+  unsigned int relay_state;
+  unsigned int last_state;
+  unsigned long overdraw_begin;
+  unsigned long request_time;
+  unsigned long error_time;
+  unsigned long last_current_log;
+  boolean seq_done = false;
+  unsigned int pilot_state;
+  unsigned long current_samples[ROLLING_AVERAGE_SIZE];
+
+  car_struct(unsigned int car, unsigned int relay_pin, unsigned int pilot_out_pin) :
+    us(car), them(car == CAR_A ? CAR_B : CAR_A),
+    relay_pin(relay_pin),
+    pilot_out_pin(pilot_out_pin),
+    last_state(DUNNO),
+    relay_state(LOW),
+    overdraw_begin(0),
+    request_time(0),
+    error_time(0),
+    last_current_log(0),
+    pilot_state(LOW)
+  {
+    memset(current_samples, 0, sizeof(current_samples));
+  };
+
+  void setRelay(unsigned int state);
+  void setPilot(unsigned int which);
+  void shared_mode_transition(unsigned int car_state);
+  void sequential_mode_transition(unsigned int car_state);
+  boolean isCarCharging();
+};
 
 #define EVENT_COUNT 4
 typedef struct event_struct {
