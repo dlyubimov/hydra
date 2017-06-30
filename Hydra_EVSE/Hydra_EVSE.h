@@ -33,7 +33,7 @@
 // SW version
 #define SW_VERSION "2.4.1"
 
-// Define this for the basic unit tests run in a generica arduino uno board with a display shield. 
+// Define this for the basic unit tests run in a generica arduino uno board with a display shield.
 #define UNIT_TESTS
 
 // By historical accident, car B is actually
@@ -68,7 +68,7 @@
 // Current production or unit test hardware (currently, version 2.3.1 in my posession).
 #ifndef UNIT_TESTS
 #include "hw_2_3_1.h"
-#else 
+#else
 #include "units.h"
 #endif
 
@@ -98,10 +98,24 @@
 
 
 // for things like erroring out a car
-#define BOTH                    0
-#define CAR_A                   1
-#define CAR_B                   2
+#define BOTH                    0x0
+#define CAR_A                   0x1
+#define CAR_B                   0x2
+#define CAR_MASK                0x3
 #define DEFAULT_TIEBREAK        CAR_A
+
+// display status to be combined with CAR_A, CAR_B, or BOTH
+#define STATUS_TIEBREAK         0x4
+
+// Mutually exclusive statuses
+#define STATUS_UNPLUGGED        (0x0u << 3)
+#define STATUS_OFF              (0x1u << 3)
+#define STATUS_ON               (0x2u << 3)
+#define STATUS_WAIT             (0x3u << 3)
+#define STATUS_DONE             (0x4u << 3)
+#define STATUS_ERR              (0x5u << 3)
+#define STATUS_MASK             ( -1u >> 16 - 4 << 3)
+
 
 // Don't use 0 or 1 because that's the value of LOW and HIGH.
 #define HALF                    3
@@ -233,7 +247,7 @@
 // simply include state transitions only), or 2 for debugging.
 #ifdef UNIT_TESTS
 #define SERIAL_LOG_LEVEL LOG_DEBUG
-#else 
+#else
 #define SERIAL_LOG_LEVEL LOG_NONE
 #endif
 
@@ -302,8 +316,8 @@ typedef struct event_struct {
   void reset() {
     event_type = TE_NONE;
     hour = 0;
-    minute = 0; 
-    dow_mask = 0; 
+    minute = 0;
+    dow_mask = 0;
   }
 
 } event_type;
@@ -344,7 +358,7 @@ typedef struct calib_struct {
 
 // eprom persistence format signature (usually minimally compatible SW_VERSION):
 // 2.4.1
-#define PERSIST_SIG 241 
+#define PERSIST_SIG 241
 #define EEPROM_OFFSET 0
 
 struct persisted_struct {
@@ -379,13 +393,14 @@ struct persisted_struct {
 
 
 ////////////////////////////////////////////////////////////
-// This is stuff from Hydra_EVSE.ino that unit tests use 
+// This is stuff from Hydra_EVSE.ino that unit tests use
 
 extern boolean inMenu;
 extern void doMenu(boolean);
 extern void log(unsigned int level, const char * fmt_str, ...);
 DISPLAY_DECL(display);
 extern persisted_struct persisted;
+extern void Delay(unsigned int);
 
 
 

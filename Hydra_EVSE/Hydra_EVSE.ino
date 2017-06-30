@@ -825,7 +825,7 @@ unsigned int checkEvent() {
 }
 
 // Just like delay(), but petting the watchdog while we're at it
-static void Delay(unsigned int t) {
+void Delay(unsigned int t) {
   while (t > 100) {
     delay(100);
     t -= 100;
