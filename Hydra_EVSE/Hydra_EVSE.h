@@ -101,6 +101,7 @@
 
 
 // for things like erroring out a car
+// Note: for current implementation it is essential that CAR_B == CAR_A + 1 so don't change that.
 #define BOTH                    0x0
 #define CAR_A                   0x1
 #define CAR_B                   0x2
@@ -369,11 +370,15 @@ struct car_struct {
   boolean isCarCharging();
   int checkState();
   unsigned long readCurrent();
-  char carLetter() { return 'A' + car - CAR_A; }
   // main loop symmetrical logic:
   void loopCheckPilot(unsigned int car_state);
   void loopCurrentMonitor();
   void loopCheckDelayedTransition();
+  // Inlines 
+  char carLetter() { return 'A' + car - CAR_A; }
+  // Returns 0 for car A and 8 for car B. Typically, to print display status or current.
+  unsigned int dispCol() { return 8 * ( car - CAR_A ); }
+  
 };
 
 #define EVENT_COUNT 4
@@ -483,6 +488,7 @@ extern void displayStatus(unsigned int status);
 extern char errLetter(unsigned int status);
 extern boolean &enable_dst;
 extern Timezone dst;
+extern car_struct cars[];
 
 
 ///////////////////////////////////////////////////////////

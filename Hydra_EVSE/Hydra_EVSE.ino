@@ -108,20 +108,10 @@ car_struct cars[] =
   car_struct(CAR_B, -1, CAR_B_RELAY, CAR_B_PILOT_OUT_PIN, CAR_B_PILOT_SENSE_PIN, CAR_B_CURRENT_PIN)
 };
 // TODO: in theory once we remove symmetry duplication in the code, we won't need this.
-car_struct &car_a = cars[0], &car_b = cars[1];
+car_struct &car_a(cars[0]), &car_b(cars[1]);
 
-
-//unsigned long car_a_current_samples[ROLLING_AVERAGE_SIZE], car_b_current_samples[ROLLING_AVERAGE_SIZE];
-//unsigned long incomingPilotMilliamps;
-//unsigned int last_car_a_state, last_car_b_state;
-//unsigned long car_a_overdraw_begin, car_b_overdraw_begin;
-//unsigned long car_a_request_time, car_b_request_time;
-//unsigned long car_a_error_time, car_b_error_time;
-//unsigned long last_current_log_car_a, last_current_log_car_b;
 unsigned long last_state_log;
 unsigned long sequential_pilot_timeout;
-//boolean seq_car_a_done = false, seq_car_b_done = false;
-//unsigned int pilot_state_a, pilot_state_b;
 unsigned char &operatingMode(persisted.operatingMode), sequential_mode_tiebreak;
 unsigned long button_press_time, button_debounce_time;
 #ifdef GROUND_TEST
@@ -476,20 +466,6 @@ void error(unsigned int status)
     car_b.request_time = 0;
   }
 
-  //  display.setBacklight(RED);
-  //  if (car == BOTH || car == CAR_A) {
-  //    display.setCursor(0, 1);
-  //    display.print(P("A:ERR "));
-  //    display.print(err);
-  //    display.print(' ');
-  //  }
-  //  if (car == BOTH || car == CAR_B) {
-  //    display.setCursor(8, 1);
-  //    display.print(P("B:ERR "));
-  //    display.print(err);
-  //    display.print(' ');
-  //  }
-  //
   displayStatus(status);
   logInfo(P("Error %c on %s"), errLetter(status), car_str(car));
 }
@@ -1991,8 +1967,9 @@ void car_struct::loopCurrentMonitor() {
       // car A is under its limit. Cancel any overdraw in progress
       overdraw_begin = 0;
     }
-    display.setCursor(0, 1);
-    display.print("A:");
+    display.setCursor(dispCol(), 1);
+    display.print(carLetter());
+    display.print(':');
     display.print(formatMilliamps(car_draw));
   }
   else

@@ -92,7 +92,11 @@ void testDisplayStatus() {
   showDS(P("A&B ERR E"), BOTH | STATUS_ERR | STATUS_ERR_E);
   showDS(P("A&B ERR R"), BOTH | STATUS_ERR | STATUS_ERR_R);
 
+  if ( cars[0].carLetter() != 'A' || cars[1].carLetter() != 'B' )
+    logInfo(P("carLetter() UNIT FAIL"));
 
+  if ( cars[0].dispCol() != 0 || cars[1].dispCol() != 8 ) 
+    logInfo(P("dispCol() UNIT FAIL"));    
 }
 
 
