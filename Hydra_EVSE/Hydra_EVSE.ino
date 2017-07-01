@@ -186,18 +186,18 @@ void persisted_struct::reset()
   signature = PERSIST_SIG;
   operatingMode = MODE_SHARED;
   max_amps = currentMenuChoices[0];
-  
+
   // By default, use the time zone for schedule.
   enable_dst = true;
   rtc_cal = 0;
   for (int i = 0; i < EVENT_COUNT; i++) events[i].reset();
 
-  // Set up events hours according to PGE EV-A TOU schedule: 
-  // Weekends off peak 7pm to 3 pm; no partial peak. 
+  // Set up events hours according to PGE EV-A TOU schedule:
+  // Weekends off peak 7pm to 3 pm; no partial peak.
   // The idea is to pause for peak on any day and for partial and full peak on weekdays
   // (so on weekdays, if unpaused manually for partial peak, will pause again for full peak).
   unsigned char weekdays = -1u >> (sizeof(int) << 3) - 5  << 1;
-  
+
   // Pause any day at 7am and resume at 11pm on weekdays.
   events[0].dow_mask =  events[1].dow_mask = weekdays;
   events[0].hour = 23; events[1].hour = 7;
@@ -205,7 +205,7 @@ void persisted_struct::reset()
   // Weekends: start at 7pm and pause (any day) on 3pm
   events[2].dow_mask = ~weekdays; events[2].hour = 19;
   events[3].dow_mask = -1u; events[3].hour = 15;
-  
+
   calib.reset();
 }
 
@@ -225,19 +225,19 @@ void logImpl(unsigned int level, const char * fmt_str, ...)
 
   switch (level)
   {
-  case LOG_INFO:
-    Serial.print(P("INFO: "));
-    break;
-  case LOG_DEBUG:
-    Serial.print(P("DEBUG: "));
-    break;
-  case LOG_TRACE:
-    Serial.print(millis());
-    Serial.print(P(" TRACE: "));
-    break;
-  default:
-    Serial.print(P("UNKNOWN: "));
-    break;
+    case LOG_INFO:
+      Serial.print(P("INFO: "));
+      break;
+    case LOG_DEBUG:
+      Serial.print(P("DEBUG: "));
+      break;
+    case LOG_TRACE:
+      Serial.print(millis());
+      Serial.print(P(" TRACE: "));
+      break;
+    default:
+      Serial.print(P("UNKNOWN: "));
+      break;
   }
   Serial.println(buf);
 #endif
@@ -247,14 +247,14 @@ static inline const char *car_str(unsigned int car)
 {
   switch (car)
   {
-  case CAR_A:
-    return "car A";
-  case CAR_B:
-    return "car B";
-  case BOTH:
-    return "both car";
-  default:
-    return "UNKNOWN";
+    case CAR_A:
+      return "car A";
+    case CAR_B:
+      return "car B";
+    case BOTH:
+      return "both car";
+    default:
+      return "UNKNOWN";
   }
 }
 
@@ -262,16 +262,16 @@ static inline const char *logic_str(unsigned int state)
 {
   switch (state)
   {
-  case LOW:
-    return "LOW";
-  case HIGH:
-    return "HIGH";
-  case HALF:
-    return "HALF";
-  case FULL:
-    return "FULL";
-  default:
-    return "UNKNOWN";
+    case LOW:
+      return "LOW";
+    case HIGH:
+      return "HIGH";
+    case HALF:
+      return "HALF";
+    case FULL:
+      return "FULL";
+    default:
+      return "UNKNOWN";
   }
 }
 
@@ -279,18 +279,18 @@ static inline const char* state_str(unsigned int state)
 {
   switch (state)
   {
-  case STATE_A:
-    return "A";
-  case STATE_B:
-    return "B";
-  case STATE_C:
-    return "C";
-  case STATE_D:
-    return "D";
-  case STATE_E:
-    return "E";
-  default:
-    return "UNKNOWN";
+    case STATE_A:
+      return "A";
+    case STATE_B:
+      return "B";
+    case STATE_C:
+      return "C";
+    case STATE_D:
+      return "D";
+    case STATE_E:
+      return "E";
+    default:
+      return "UNKNOWN";
   }
 }
 
@@ -363,20 +363,20 @@ char errLetter(unsigned int status)
 {
   switch ( status & STATUS_ERR_MASK )
   {
-  case STATUS_ERR_O:
-    return 'O';
-  case STATUS_ERR_F:
-    return 'F';
-  case STATUS_ERR_G:
-    return 'G';
-  case STATUS_ERR_T:
-    return 'T';
-  case STATUS_ERR_R:
-    return 'R';
-  case STATUS_ERR_E:
-    return 'E';
-  default:
-    return '?';
+    case STATUS_ERR_O:
+      return 'O';
+    case STATUS_ERR_F:
+      return 'F';
+    case STATUS_ERR_G:
+      return 'G';
+    case STATUS_ERR_T:
+      return 'T';
+    case STATUS_ERR_R:
+      return 'R';
+    case STATUS_ERR_E:
+      return 'E';
+    default:
+      return '?';
   }
 }
 
@@ -388,19 +388,19 @@ void displayStatus(unsigned int status)
   char carLetter;
   switch (car)
   {
-  case CAR_A:
-    col = 0;
-    carLetter = 'A';
-    break;
-  case CAR_B:
-    col = 8;
-    carLetter = 'B';
-    break;
-  default:
-    // this means update both cars.
-    displayStatus( (status & ~CAR_MASK) | CAR_A);
-    displayStatus( (status & ~CAR_MASK) | CAR_B);
-    return;
+    case CAR_A:
+      col = 0;
+      carLetter = 'A';
+      break;
+    case CAR_B:
+      col = 8;
+      carLetter = 'B';
+      break;
+    default:
+      // this means update both cars.
+      displayStatus( (status & ~CAR_MASK) | CAR_A);
+      displayStatus( (status & ~CAR_MASK) | CAR_B);
+      return;
   }
   //  display.setCursor(col,1);
   //  for (int i = 0; i < 8; i++) display.print(' ');
@@ -412,29 +412,29 @@ void displayStatus(unsigned int status)
 
   switch ( status & STATUS_MASK)   // 7
   {
-  case STATUS_UNPLUGGED:
-    display.print(P(" --- "));
-    break;
-  case  STATUS_OFF:
-    display.print(P(" off "));
-    break;
-  case  STATUS_ON:
-    display.print(P(" on  "));
-    break;
-  case  STATUS_WAIT:
-    display.print(P(" wait"));
-    break;
-  case  STATUS_DONE:
-    display.print(P(" done"));
-    break;
+    case STATUS_UNPLUGGED:
+      display.print(P(" --- "));
+      break;
+    case  STATUS_OFF:
+      display.print(P(" off "));
+      break;
+    case  STATUS_ON:
+      display.print(P(" on  "));
+      break;
+    case  STATUS_WAIT:
+      display.print(P(" wait"));
+      break;
+    case  STATUS_DONE:
+      display.print(P(" done"));
+      break;
 
-  case  STATUS_ERR:
-  default:
-    // ERROR
-    display.setBacklight(RED);
-    display.print(P("ERR "));
-    display.print(errLetter(status & STATUS_ERR_MASK));
-    break;
+    case  STATUS_ERR:
+    default:
+      // ERROR
+      display.setBacklight(RED);
+      display.print(P("ERR "));
+      display.print(errLetter(status & STATUS_ERR_MASK));
+      break;
   }
   display.print(" "); // 8
   if ( (status & STATUS_TIEBREAK) != 0)
@@ -617,7 +617,7 @@ int car_struct::checkState()
 {
   // poll the pilot state pin for 10 ms (should be 10 pilot cycles), looking for the low and high.
   unsigned int low = 9999, high = 0;
-//  unsigned int car_pin = (car == CAR_A) ? CAR_A_PILOT_SENSE_PIN : CAR_B_PILOT_SENSE_PIN;
+  //  unsigned int car_pin = (car == CAR_A) ? CAR_A_PILOT_SENSE_PIN : CAR_B_PILOT_SENSE_PIN;
   unsigned long count = 0;
   for (unsigned long start = millis(); millis() - start < STATE_CHECK_INTERVAL; )
   {
@@ -668,7 +668,7 @@ static inline unsigned long ulong_sqrt(unsigned long in)
 
 unsigned long car_struct::readCurrent()
 {
-//  unsigned int car_pin = (car == CAR_A) ? CAR_A_CURRENT_PIN : CAR_B_CURRENT_PIN;
+  //  unsigned int car_pin = (car == CAR_A) ? CAR_A_CURRENT_PIN : CAR_B_CURRENT_PIN;
   calib_struct& calib = persisted.calib;
   char calib_amm = car == CAR_A ? calib.amm_a : calib.amm_b;
   unsigned long sum = 0;
@@ -695,21 +695,21 @@ unsigned long car_struct::readCurrent()
     last_sample = sample;
     switch (zero_crossings)
     {
-    case 0:
-      continue; // Still waiting to start sampling
-    case 1:
-    case 2:
-      // Gather the sum-of-the-squares and count how many samples we've collected.
-      sum += (unsigned long)((sample - 512) * (sample - 512));
-      sample_count++;
-      continue;
-    case 3:
-      // The answer is the square root of the mean of the squares.
-      // But additionally, that value must be scaled to a real current value.
-      sum = ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR;
-      // Only apply calibration on readings meaningfully high.
-      if ( sum > 5000 ) sum += 100 * calib_amm;
-      return sum;
+      case 0:
+        continue; // Still waiting to start sampling
+      case 1:
+      case 2:
+        // Gather the sum-of-the-squares and count how many samples we've collected.
+        sum += (unsigned long)((sample - 512) * (sample - 512));
+        sample_count++;
+        continue;
+      case 3:
+        // The answer is the square root of the mean of the squares.
+        // But additionally, that value must be scaled to a real current value.
+        sum = ulong_sqrt(sum / sample_count) * CURRENT_SCALE_FACTOR;
+        // Only apply calibration on readings meaningfully high.
+        if ( sum > 5000 ) sum += 100 * calib_amm;
+        return sum;
     }
   }
   // ran out of time. Assume that it's simply not oscillating any.
@@ -748,143 +748,143 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
 
   switch (car_state)
   {
-  case STATE_A:
-    // No matter what, insure that the pilot and relay are off.
-    setRelay(LOW);
-    setPilot(HIGH);
-    // We're not both in state B anymore.
-    sequential_pilot_timeout = 0;
-    // We don't exist. If they're waiting, they can have it.
-    if (their_state == STATE_B)
-    {
-      them.setPilot(FULL);
-      displayStatus( them.car | STATUS_OFF );
-      //        display.setCursor((them == CAR_A) ? 0 : 8, 1);
-      //        display.print((them == CAR_A) ? "A" : "B");
-      //        display.print(P(": off  "));
-    }
-    displayStatus( car | STATUS_UNPLUGGED );
-    //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-    //      display.print((us == CAR_A) ? "A" : "B");
-    //      display.print(P(": ---  "));
-    // reset done state for all
-    seq_done = false;
-    them.seq_done = false;
-    break;
-  case STATE_B:
-    // No matter what, insure that the relay is off.
-    setRelay(LOW);
-    if (last_state == STATE_C || last_state == STATE_D)
-    {
-      // We transitioned from C/D to B. That means we're passing the batton
-      // to the other car, if they want it and not marked "done" yet.
+    case STATE_A:
+      // No matter what, insure that the pilot and relay are off.
+      setRelay(LOW);
+      setPilot(HIGH);
+      // We're not both in state B anymore.
+      sequential_pilot_timeout = 0;
+      // We don't exist. If they're waiting, they can have it.
       if (their_state == STATE_B)
       {
-        if ( ! them.seq_done)
+        them.setPilot(FULL);
+        displayStatus( them.car | STATUS_OFF );
+        //        display.setCursor((them == CAR_A) ? 0 : 8, 1);
+        //        display.print((them == CAR_A) ? "A" : "B");
+        //        display.print(P(": off  "));
+      }
+      displayStatus( car | STATUS_UNPLUGGED );
+      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
+      //      display.print((us == CAR_A) ? "A" : "B");
+      //      display.print(P(": ---  "));
+      // reset done state for all
+      seq_done = false;
+      them.seq_done = false;
+      break;
+    case STATE_B:
+      // No matter what, insure that the relay is off.
+      setRelay(LOW);
+      if (last_state == STATE_C || last_state == STATE_D)
+      {
+        // We transitioned from C/D to B. That means we're passing the batton
+        // to the other car, if they want it and not marked "done" yet.
+        if (their_state == STATE_B)
         {
-          // flip only if they are not done yet, otherwise wait for pilot timeout before we do again.
-          setPilot(HIGH);
-          them.setPilot(FULL);
+          if ( ! them.seq_done)
+          {
+            // flip only if they are not done yet, otherwise wait for pilot timeout before we do again.
+            setPilot(HIGH);
+            them.setPilot(FULL);
+          }
+          displayStatus(them.car | ( them.seq_done ? STATUS_DONE : STATUS_OFF ));
+          //          display.setCursor((them == CAR_A) ? 0 : 8, 1);
+          //          display.print((them == CAR_A) ? "A" : "B");
+          //          if (them_done) display.print(P(": done ")); else display.print(P(": off  "));
+
+
+          // differentiated from "wait" because a C/D->B transition has occurred.
+          displayStatus(car | STATUS_DONE);
+          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
+          //          display.print((us == CAR_A) ? "A" : "B");
+          //          display.print(P(": done ")); // differentiated from "wait" because a C/D->B transition has occurred.
+          // Disable future charges for this car until re-unpaused or re-plugged.
+          seq_done = true;
+          sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
         }
-        displayStatus(them.car | ( them.seq_done ? STATUS_DONE : STATUS_OFF ));
-        //          display.setCursor((them == CAR_A) ? 0 : 8, 1);
-        //          display.print((them == CAR_A) ? "A" : "B");
-        //          if (them_done) display.print(P(": done ")); else display.print(P(": off  "));
+        else
+        {
 
-
-        // differentiated from "wait" because a C/D->B transition has occurred.
-        displayStatus(car | STATUS_DONE);
-        //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //          display.print((us == CAR_A) ? "A" : "B");
-        //          display.print(P(": done ")); // differentiated from "wait" because a C/D->B transition has occurred.
-        // Disable future charges for this car until re-unpaused or re-plugged.
-        seq_done = true;
-        sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
+          displayStatus(car | STATUS_OFF);
+          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
+          //          display.print((us == CAR_A) ? "A" : "B");
+          //          display.print(P(": off  "));
+          // their state is not B, so we're not "flipping"
+          sequential_pilot_timeout = 0;
+        }
       }
       else
       {
-
-        displayStatus(car | STATUS_OFF);
-        //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //          display.print((us == CAR_A) ? "A" : "B");
-        //          display.print(P(": off  "));
-        // their state is not B, so we're not "flipping"
-        sequential_pilot_timeout = 0;
-      }
-    }
-    else
-    {
-      if (their_state == STATE_A)
-      {
-        // We can only grab the batton if they're not plugged in at all.
-        setPilot(FULL);
-        seq_done = false;
-        them.seq_done = false;
-        sequential_pilot_timeout = 0;
-
-        displayStatus(car | STATUS_OFF );
-        //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //          display.print((us == CAR_A) ? "A" : "B");
-        //          display.print(P(": off  "));
-
-        break;
-      }
-      else if (their_state == STATE_B || their_state == DUNNO)
-      {
-        // BUT if we're *both* in state b, then that's a tie. We break the tie with our saved tiebreak value.
-        // If it's not us, then we simply ignore this transition entirely. The other car will wind up in this same place,
-        // we'll turn their pilot on, and then clear the tiebreak. Next time we roll through, we'll go into the other
-        // half of this if/else and we'll get the "wait" display
-        if (sequential_mode_tiebreak != car )
+        if (their_state == STATE_A)
         {
-          return;
-        }
-        // But if it IS us, then clear the tiebreak.
-        if (!seq_done && (sequential_mode_tiebreak == car ))
-        {
+          // We can only grab the batton if they're not plugged in at all.
           setPilot(FULL);
-          sequential_pilot_timeout = millis();
+          seq_done = false;
+          them.seq_done = false;
+          sequential_pilot_timeout = 0;
 
-          displayStatus (car | STATUS_OFF);
-          //            display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //            display.print((us == CAR_A) ? "A" : "B");
-          //            display.print(P(": off  "));
+          displayStatus(car | STATUS_OFF );
+          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
+          //          display.print((us == CAR_A) ? "A" : "B");
+          //          display.print(P(": off  "));
+
           break;
         }
+        else if (their_state == STATE_B || their_state == DUNNO)
+        {
+          // BUT if we're *both* in state b, then that's a tie. We break the tie with our saved tiebreak value.
+          // If it's not us, then we simply ignore this transition entirely. The other car will wind up in this same place,
+          // we'll turn their pilot on, and then clear the tiebreak. Next time we roll through, we'll go into the other
+          // half of this if/else and we'll get the "wait" display
+          if (sequential_mode_tiebreak != car )
+          {
+            return;
+          }
+          // But if it IS us, then clear the tiebreak.
+          if (!seq_done && (sequential_mode_tiebreak == car ))
+          {
+            setPilot(FULL);
+            sequential_pilot_timeout = millis();
+
+            displayStatus (car | STATUS_OFF);
+            //            display.setCursor((us == CAR_A) ? 0 : 8, 1);
+            //            display.print((us == CAR_A) ? "A" : "B");
+            //            display.print(P(": off  "));
+            break;
+          }
+        }
+        // Either they are in state C/D or they're in state B and we lost the tiebreak.
+        displayStatus(car | ( seq_done ? STATUS_DONE : STATUS_WAIT));
+        //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
+        //        display.print((us == CAR_A) ? "A" : "B");
+        //        if ( us_done)
+        //          display.print(P(": done "));
+        //        else
+        //          display.print(P(": wait "));
       }
-      // Either they are in state C/D or they're in state B and we lost the tiebreak.
-      displayStatus(car | ( seq_done ? STATUS_DONE : STATUS_WAIT));
-      //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
-      //        display.print((us == CAR_A) ? "A" : "B");
-      //        if ( us_done)
-      //          display.print(P(": done "));
-      //        else
-      //          display.print(P(": wait "));
-    }
-    break;
-  case STATE_C:
-  case STATE_D:
-    if (isCarCharging())
-    {
-      // we're already charging. This might be a flip from C to D. Ignore it.
       break;
-    }
-    if (pilot_state != FULL)
-    {
-      error(car | STATUS_ERR | STATUS_ERR_T); // illegal transition: no state C without a pilot
+    case STATE_C:
+    case STATE_D:
+      if (isCarCharging())
+      {
+        // we're already charging. This might be a flip from C to D. Ignore it.
+        break;
+      }
+      if (pilot_state != FULL)
+      {
+        error(car | STATUS_ERR | STATUS_ERR_T); // illegal transition: no state C without a pilot
+        return;
+      }
+      // We're not both in state B anymore
+      sequential_pilot_timeout = 0;
+      displayStatus(car | STATUS_ON );
+      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
+      //      display.print((us == CAR_A) ? "A" : "B");
+      //      display.print(P(": ON   "));
+      setRelay(HIGH); // turn on the juice
+      break;
+    case STATE_E:
+      error(car | STATUS_ERR | STATUS_ERR_E);
       return;
-    }
-    // We're not both in state B anymore
-    sequential_pilot_timeout = 0;
-    displayStatus(car | STATUS_ON );
-    //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-    //      display.print((us == CAR_A) ? "A" : "B");
-    //      display.print(P(": ON   "));
-    setRelay(HIGH); // turn on the juice
-    break;
-  case STATE_E:
-    error(car | STATUS_ERR | STATUS_ERR_E);
-    return;
   }
   last_state = car_state;
 }
@@ -895,99 +895,99 @@ void car_struct::shared_mode_transition(unsigned int car_state)
   last_state = car_state;
   switch (car_state)
   {
-  case STATE_A:
-  case STATE_B:
-    // We're in an "off" state of one sort or other.
-    // In either case, clear any connection delay timer,
-    // make sure the relay is off, and set the diplay
-    // appropriately. For state A, set our pilot high,
-    // and fot state B, set it to half if the other car
-    // is charging, full otherwise.
-    setRelay(LOW);
-    //      setPilot(us, car_state == STATE_A ? HIGH : (isCarCharging(them) ? HALF : FULL));
-    setPilot(car_state == STATE_A ? HIGH : (them.isCarCharging() ? HALF : FULL));
-    displayStatus(car | (car_state == STATE_A ? STATUS_UNPLUGGED : STATUS_OFF));
-    //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-    //      display.print((us == CAR_A) ? "A" : "B");
-    //      display.print(car_state == STATE_A ? ": ---  " : ": off  ");
-    request_time = 0;
+    case STATE_A:
+    case STATE_B:
+      // We're in an "off" state of one sort or other.
+      // In either case, clear any connection delay timer,
+      // make sure the relay is off, and set the diplay
+      // appropriately. For state A, set our pilot high,
+      // and fot state B, set it to half if the other car
+      // is charging, full otherwise.
+      setRelay(LOW);
+      //      setPilot(us, car_state == STATE_A ? HIGH : (isCarCharging(them) ? HALF : FULL));
+      setPilot(car_state == STATE_A ? HIGH : (them.isCarCharging() ? HALF : FULL));
+      displayStatus(car | (car_state == STATE_A ? STATUS_UNPLUGGED : STATUS_OFF));
+      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
+      //      display.print((us == CAR_A) ? "A" : "B");
+      //      display.print(car_state == STATE_A ? ": ---  " : ": off  ");
+      request_time = 0;
 #ifdef QUICK_CYCLING_WORKAROUND
-    if (!isCarCharging(them))
-    {
-      // If the other car isn't actually charging, then we don't
-      // need to bother being tricky.
-      if (pilotState(them) == HALF)
-        setPilot(them, FULL);
-      pilot_release_holdoff_time = 0;
-    }
-    else
-#endif
-      if (them.pilot_state == HALF)
+      if (!isCarCharging(them))
       {
-#ifdef QUICK_CYCLING_WORKAROUND
-        // Since they're charging, in *this* much time, we'll give the other car a full pilot.
-        pilot_release_holdoff_time = millis() + (PILOT_RELEASE_HOLDOFF_MINUTES * (1000L * 60));
-#else
-        them.setPilot(FULL);
-#endif
+        // If the other car isn't actually charging, then we don't
+        // need to bother being tricky.
+        if (pilotState(them) == HALF)
+          setPilot(them, FULL);
+        pilot_release_holdoff_time = 0;
       }
-    break;
-  case STATE_C:
-  case STATE_D:
-    if (isCarCharging())
-    {
-      // we're already charging. This might be a flip from C to D. Ignore it.
-      break;
-    }
-    if (them.isCarCharging())
-    {
+      else
+#endif
+        if (them.pilot_state == HALF)
+        {
 #ifdef QUICK_CYCLING_WORKAROUND
-      if (pilot_release_holdoff_time != 0)
+          // Since they're charging, in *this* much time, we'll give the other car a full pilot.
+          pilot_release_holdoff_time = millis() + (PILOT_RELEASE_HOLDOFF_MINUTES * (1000L * 60));
+#else
+          them.setPilot(FULL);
+#endif
+        }
+      break;
+    case STATE_C:
+    case STATE_D:
+      if (isCarCharging())
       {
-        // We turned back on before the grace period. We can just go, since they
-        // still have a half-pilot.
-        pilot_release_holdoff_time = 0; // cancel the grace period
-        setPilot(them, HALF); // *should* be redundant
-        setPilot(us, HALF); // redundant, unless we went straight from A to C.
-        displayStatus(us | STATUS_ON);
-        //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //          display.print((us == CAR_A) ? "A" : "B");
-        //          display.print(P(": ON   "));
-        setRelay(us, HIGH);
+        // we're already charging. This might be a flip from C to D. Ignore it.
+        break;
+      }
+      if (them.isCarCharging())
+      {
+#ifdef QUICK_CYCLING_WORKAROUND
+        if (pilot_release_holdoff_time != 0)
+        {
+          // We turned back on before the grace period. We can just go, since they
+          // still have a half-pilot.
+          pilot_release_holdoff_time = 0; // cancel the grace period
+          setPilot(them, HALF); // *should* be redundant
+          setPilot(us, HALF); // redundant, unless we went straight from A to C.
+          displayStatus(us | STATUS_ON);
+          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
+          //          display.print((us == CAR_A) ? "A" : "B");
+          //          display.print(P(": ON   "));
+          setRelay(us, HIGH);
+        }
+        else
+        {
+#endif
+          // if they are charging, we must transition them.
+          request_time = millis();
+          // Drop car A down to 50%
+          them.setPilot(HALF);
+          setPilot(HALF); // this is redundant unless we are transitioning from A to C suddenly.
+          displayStatus(car | STATUS_WAIT);
+          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
+          //          display.print((us == CAR_A) ? "A" : "B");
+          //          display.print(P(": wait "));
+#ifdef QUICK_CYCLING_WORKAROUND
+        }
+#endif
       }
       else
       {
-#endif
-        // if they are charging, we must transition them.
-        request_time = millis();
-        // Drop car A down to 50%
-        them.setPilot(HALF);
-        setPilot(HALF); // this is redundant unless we are transitioning from A to C suddenly.
-        displayStatus(car | STATUS_WAIT);
-        //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //          display.print((us == CAR_A) ? "A" : "B");
-        //          display.print(P(": wait "));
-#ifdef QUICK_CYCLING_WORKAROUND
+        // if they're not charging, then we can just go. If they have a full pilot, they get downshifted.
+        if (them.pilot_state == FULL)
+          them.setPilot(HALF);
+        setPilot(FULL); // this is redundant unless we are going directly from A to C.
+        request_time = 0;
+        displayStatus(car | STATUS_ON);
+        //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
+        //        display.print((us == CAR_A) ? "A" : "B");
+        //        display.print(P(": ON   "));
+        setRelay(HIGH);
       }
-#endif
-    }
-    else
-    {
-      // if they're not charging, then we can just go. If they have a full pilot, they get downshifted.
-      if (them.pilot_state == FULL)
-        them.setPilot(HALF);
-      setPilot(FULL); // this is redundant unless we are going directly from A to C.
-      request_time = 0;
-      displayStatus(car | STATUS_ON);
-      //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
-      //        display.print((us == CAR_A) ? "A" : "B");
-      //        display.print(P(": ON   "));
-      setRelay(HIGH);
-    }
-    break;
-  case STATE_E:
-    error(car | STATUS_ERR | STATUS_ERR_E);
-    break;
+      break;
+    case STATE_E:
+      error(car | STATUS_ERR | STATUS_ERR_E);
+      break;
   }
 }
 
@@ -1152,36 +1152,36 @@ void doClockMenu(boolean initialize)
   {
     switch (editCursor)
     {
-    case 0:
-      editHour++;
+      case 0:
+        editHour++;
 #ifdef CLOCK_24HOUR
-      if (editHour > 23) editHour = 0;
+        if (editHour > 23) editHour = 0;
 #else
-      if (editHour > 12) editHour = 1;
+        if (editHour > 12) editHour = 1;
 #endif
-      break;
-    case 1:
-      editMinute++;
-      if (editMinute > 59) editMinute = 0;
-      break;
+        break;
+      case 1:
+        editMinute++;
+        if (editMinute > 59) editMinute = 0;
+        break;
 #ifndef CLOCK_24HOUR
-    case 2:
-      editMeridian++;
-      if (editMeridian > 1) editMeridian = 0;
-      break;
+      case 2:
+        editMeridian++;
+        if (editMeridian > 1) editMeridian = 0;
+        break;
 #endif
-    case 3:
-      editDay++;
-      if (editDay > 31) editDay = 1;
-      break;
-    case 4:
-      editMonth++;
-      if (editMonth > 12) editMonth = 1;
-      break;
-    case 5:
-      editYear++;
-      if (editYear > LAST_YEAR) editYear = FIRST_YEAR;
-      break;
+      case 3:
+        editDay++;
+        if (editDay > 31) editDay = 1;
+        break;
+      case 4:
+        editMonth++;
+        if (editMonth > 12) editMonth = 1;
+        break;
+      case 5:
+        editYear++;
+        if (editYear > LAST_YEAR) editYear = FIRST_YEAR;
+        break;
     }
   }
   if (event == EVENT_LONG_PUSH)
@@ -1283,55 +1283,55 @@ void doEventMenu(boolean initialize)
   {
     switch (editCursor)
     {
-    case 0: // the event ID
-      if (!initialize) editEvent++;
-      if (editEvent > EVENT_COUNT) editEvent = 0;
-      if (editEvent < EVENT_COUNT)
-      {
-        editHour = events[editEvent].hour;
-        editMinute = events[editEvent].minute;
-        editDOW = events[editEvent].dow_mask;
-        editType = events[editEvent].event_type;
-        // Convert to 12 hour time
+      case 0: // the event ID
+        if (!initialize) editEvent++;
+        if (editEvent > EVENT_COUNT) editEvent = 0;
+        if (editEvent < EVENT_COUNT)
+        {
+          editHour = events[editEvent].hour;
+          editMinute = events[editEvent].minute;
+          editDOW = events[editEvent].dow_mask;
+          editType = events[editEvent].event_type;
+          // Convert to 12 hour time
 #ifndef CLOCK_24HOUR
-        editMeridian = (editHour >= 12) ? 1 : 0;
-        if (editHour == 0)
-          editHour = 12;
-        else if (editHour > 12)
-          editHour -= 12;
+          editMeridian = (editHour >= 12) ? 1 : 0;
+          if (editHour == 0)
+            editHour = 12;
+          else if (editHour > 12)
+            editHour -= 12;
 #endif
-      }
-      break;
-    case 1: // the hour
-      editHour++;
+        }
+        break;
+      case 1: // the hour
+        editHour++;
 #ifdef CLOCK_24HOUR
-      if (editHour > 23) editHour = 0;
+        if (editHour > 23) editHour = 0;
 #else
-      if (editHour > 12) editHour = 1;
+        if (editHour > 12) editHour = 1;
 #endif
-      break;
-    case 2: // the minute
-      editMinute++;
-      if (editMinute > 59) editMinute = 0;
-      break;
+        break;
+      case 2: // the minute
+        editMinute++;
+        if (editMinute > 59) editMinute = 0;
+        break;
 #ifndef CLOCK_24HOUR
-    case 3: // the meridian
-      editMeridian = !editMeridian;
-      break;
+      case 3: // the meridian
+        editMeridian = !editMeridian;
+        break;
 #endif
-    case 4: // Sunday
-    case 5: // Monday
-    case 6: // Tuesday
-    case 7: // Wednesday
-    case 8: // Thursday
-    case 9: // Friday
-    case 10: // Saturday
-      editDOW ^= 1 << (editCursor - 4);
-      break;
-    case 11: // event type
-      editType++;
-      if (editType > TE_LAST) editType = 0;
-      break;
+      case 4: // Sunday
+      case 5: // Monday
+      case 6: // Tuesday
+      case 7: // Wednesday
+      case 8: // Thursday
+      case 9: // Friday
+      case 10: // Saturday
+        editDOW ^= 1 << (editCursor - 4);
+        break;
+      case 11: // event type
+        editType++;
+        if (editType > TE_LAST) editType = 0;
+        break;
     }
   }
   if (event == EVENT_LONG_PUSH)
@@ -1470,31 +1470,31 @@ void calib_struct::doMenu(boolean initialize)
 
     switch (event )
     {
-    case EVENT_SHORT_PUSH:
-      switch (menuItem)
-      {
-      case 0:
-      case 1:
-        if ( ++amm > CALIB_AMM_MAX) amm = -CALIB_AMM_MAX;
+      case EVENT_SHORT_PUSH:
+        switch (menuItem)
+        {
+          case 0:
+          case 1:
+            if ( ++amm > CALIB_AMM_MAX) amm = -CALIB_AMM_MAX;
+            break;
+          case 2:
+          case 3:
+            if ( --pilot < -CALIB_PILOT_MAX) pilot = 0;
+            break;
+        }
         break;
-      case 2:
-      case 3:
-        if ( --pilot < -CALIB_PILOT_MAX) pilot = 0;
+      case EVENT_LONG_PUSH:
+        menuItem++;
+        if ( menuItem >= MAX_ITEMS)
+        {
+          persisted.eepromWrite();
+          doMenuFunc = ::doMenu;
+          inMenu = false; // exit completely all the way
+          return;
+        }
         break;
-      }
-      break;
-    case EVENT_LONG_PUSH:
-      menuItem++;
-      if ( menuItem >= MAX_ITEMS)
-      {
-        persisted.eepromWrite();
-        doMenuFunc = ::doMenu;
-        inMenu = false; // exit completely all the way
+      default:
         return;
-      }
-      break;
-    default:
-      return;
     }
   }
 
@@ -1505,25 +1505,25 @@ void calib_struct::doMenu(boolean initialize)
 
   switch (menuItem)
   {
-  case 0:
-  case 1:
-    display.clear();
-    display.print(P("Ammeter"));
+    case 0:
+    case 1:
+      display.clear();
+      display.print(P("Ammeter"));
 
-    display.setCursor(0, 1);
-    snprintf(str, sizeof(str), P(" Car %s: %s0.%d"), carSymb, amm < 0 ? "-" : "+", abs(amm));
-    display.print(str);
-    break;
+      display.setCursor(0, 1);
+      snprintf(str, sizeof(str), P(" Car %s: %s0.%d"), carSymb, amm < 0 ? "-" : "+", abs(amm));
+      display.print(str);
+      break;
 
-  case 2:
-  case 3:
-    display.clear();
-    display.print(P("Pilot derate"));
+    case 2:
+    case 3:
+      display.clear();
+      display.print(P("Pilot derate"));
 
-    display.setCursor(0, 1);
-    snprintf(str, sizeof(str), P(" Car %s: %d%%"), carSymb, (int)pilot);
-    display.print(str);
-    break;
+      display.setCursor(0, 1);
+      snprintf(str, sizeof(str), P(" Car %s: %d%%"), carSymb, (int)pilot);
+      display.print(str);
+      break;
   }
 }
 // calibration structure support
@@ -1552,88 +1552,88 @@ void doMenu(boolean initialize)
     // Depending on which menu it is, now we commit the chosen value
     switch (menu_number)
     {
-    case MENU_OPERATING_MODE:
-      operatingMode = menu_item;
-      persisted.eepromWrite();
-      break;
-    case MENU_CURRENT_AVAIL:
-      max_current_amps = currentMenuChoices[menu_item];
-      persisted.eepromWrite();
-      break;
-    case MENU_CLOCK:
-      if (menu_item == 0)
-      {
-        doMenuFunc = doClockMenu;
-        doClockMenu(true);
+      case MENU_OPERATING_MODE:
+        operatingMode = menu_item;
+        persisted.eepromWrite();
+        break;
+      case MENU_CURRENT_AVAIL:
+        max_current_amps = currentMenuChoices[menu_item];
+        persisted.eepromWrite();
+        break;
+      case MENU_CLOCK:
+        if (menu_item == 0)
+        {
+          doMenuFunc = doClockMenu;
+          doClockMenu(true);
+          return;
+        }
+        break;
+      case MENU_DST:
+        enable_dst = menu_item == 0;
+        persisted.eepromWrite();
+        break;
+      case MENU_EVENT:
+        if (menu_item == 0)
+        {
+          doMenuFunc = doEventMenu;
+          doEventMenu(true);
+          return;
+        }
+        break;
+      case MENU_CALIB:
+        if (menu_item == 0 )
+        {
+          doMenuFunc = doCalibMenu;
+          doCalibMenu(true);
+          return;
+        }
+        break;
+      case MENU_EXIT:
+        if (menu_item == 0)
+          inMenu = false;
+        else
+          menu_number = 999;
         return;
-      }
-      break;
-    case MENU_DST:
-      enable_dst = menu_item == 0;
-      persisted.eepromWrite();
-      break;
-    case MENU_EVENT:
-      if (menu_item == 0)
-      {
-        doMenuFunc = doEventMenu;
-        doEventMenu(true);
-        return;
-      }
-      break;
-    case MENU_CALIB:
-      if (menu_item == 0 )
-      {
-        doMenuFunc = doCalibMenu;
-        doCalibMenu(true);
-        return;
-      }
-      break;
-    case MENU_EXIT:
-      if (menu_item == 0)
-        inMenu = false;
-      else
-        menu_number = 999;
-      return;
     }
     menu_number++;
     if (menu_number > MAX_MENU_NUMBER) menu_number = 0;
     // Now set the selected menu item for the next menu
     switch (menu_number)
     {
-    case MENU_OPERATING_MODE:
-      menu_item = operatingMode;
-      menu_item_max = LAST_MODE;
-      break;
-    case MENU_CURRENT_AVAIL:
+      case MENU_OPERATING_MODE:
+        menu_item = operatingMode;
+        menu_item_max = LAST_MODE;
+        break;
+      case MENU_CURRENT_AVAIL:
 
-      menu_item = 0; // fallback in case not found
-      for (unsigned int i = 0; i < sizeof(currentMenuChoices); i++)
-      {
-        if (max_current_amps == currentMenuChoices[i])
-          menu_item = i;
-      }
-      menu_item_max = sizeof(currentMenuChoices) - 1;
-      break;
-    case MENU_CLOCK:
-      menu_item = 1; // default to "No"
-      menu_item_max = 1;
-      break;
-    case MENU_DST:
-      menu_item_max = 1;
-      menu_item = enable_dst ? 0 : 1;
-      break;
-    case MENU_EVENT:
-      menu_item = 1; // default to "No"
-      menu_item_max = 1;
-      break;
-    case MENU_CALIB:
-      menu_item = 1; // default to "No"
-      menu_item_max = 1;
-      break;
-    case MENU_EXIT:
-      menu_item = 0; // default to "Yes"
-      menu_item_max = 1;
-      break;
+        menu_item = 0; // fallback in case not found
+        for (unsigned int i = 0; i < sizeof(currentMenuChoices); i++)
+        {
+          if (max_current_amps == currentMenuChoices[i])
+            menu_item = i;
+        }
+        menu_item_max = sizeof(currentMenuChoices) - 1;
+        break;
+      case MENU_CLOCK:
+        menu_item = 1; // default to "No"
+        menu_item_max = 1;
+        break;
+      case MENU_DST:
+        menu_item_max = 1;
+        menu_item = enable_dst ? 0 : 1;
+        break;
+      case MENU_EVENT:
+        menu_item = 1; // default to "No"
+        menu_item_max = 1;
+        break;
+      case MENU_CALIB:
+        menu_item = 1; // default to "No"
+        menu_item_max = 1;
+        break;
+      case MENU_EXIT:
+        menu_item = 0; // default to "Yes"
+        menu_item_max = 1;
+        break;
     }
     menu_item_selected = menu_item;
     // fall through to rendering the display
@@ -1642,97 +1642,97 @@ void doMenu(boolean initialize)
   display.clear();
   switch (menu_number)
   {
-  case MENU_OPERATING_MODE:
-    display.print(P(MENU_OPERATING_MODE_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case MODE_SHARED:
-      display.print(P(OPTION_SHARED_TEXT));
+    case MENU_OPERATING_MODE:
+      display.print(P(MENU_OPERATING_MODE_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case MODE_SHARED:
+          display.print(P(OPTION_SHARED_TEXT));
+          break;
+        case MODE_SEQUENTIAL:
+          display.print(P(OPTION_SEQUENTIAL_TEXT));
+          break;
+      }
       break;
-    case MODE_SEQUENTIAL:
-      display.print(P(OPTION_SEQUENTIAL_TEXT));
+    case MENU_CURRENT_AVAIL:
+      display.print(P(MENU_CURRENT_AVAIL_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      display.print(currentMenuChoices[menu_item]);
+      display.print(P(" Amps"));
       break;
-    }
-    break;
-  case MENU_CURRENT_AVAIL:
-    display.print(P(MENU_CURRENT_AVAIL_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    display.print(currentMenuChoices[menu_item]);
-    display.print(P(" Amps"));
-    break;
-  case MENU_CLOCK:
-    display.print(P(MENU_CLOCK_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case 0:
-      display.print(P(OPTION_YES_TEXT));
+    case MENU_CLOCK:
+      display.print(P(MENU_CLOCK_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case 0:
+          display.print(P(OPTION_YES_TEXT));
+          break;
+        case 1:
+          display.print(P(OPTION_NO_TEXT));
+          break;
+      }
       break;
-    case 1:
-      display.print(P(OPTION_NO_TEXT));
+    case MENU_DST:
+      display.print(P(MENU_DST_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case 0:
+          display.print(P(OPTION_YES_TEXT));
+          break;
+        case 1:
+          display.print(P(OPTION_NO_TEXT));
+          break;
+      }
       break;
-    }
-    break;
-  case MENU_DST:
-    display.print(P(MENU_DST_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case 0:
-      display.print(P(OPTION_YES_TEXT));
+    case MENU_EVENT:
+      display.print(P(MENU_EVENT_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case 0:
+          display.print(P(OPTION_YES_TEXT));
+          break;
+        case 1:
+          display.print(P(OPTION_NO_TEXT));
+          break;
+      }
       break;
-    case 1:
-      display.print(P(OPTION_NO_TEXT));
+    case MENU_CALIB:
+      display.print(P(MENU_CALIB_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case 0:
+          display.print(P(OPTION_YES_TEXT));
+          break;
+        case 1:
+          display.print(P(OPTION_NO_TEXT));
+          break;
+      }
       break;
-    }
-    break;
-  case MENU_EVENT:
-    display.print(P(MENU_EVENT_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case 0:
-      display.print(P(OPTION_YES_TEXT));
+    case MENU_EXIT:
+      display.print(P(MENU_EXIT_HEADER));
+      display.setCursor(0, 1);
+      display.print((menu_item == menu_item_selected) ? '+' : ' ');
+      switch (menu_item)
+      {
+        case 0:
+          display.print(P(OPTION_YES_TEXT));
+          break;
+        case 1:
+          display.print(P(OPTION_NO_TEXT));
+          break;
+      }
       break;
-    case 1:
-      display.print(P(OPTION_NO_TEXT));
-      break;
-    }
-    break;
-  case MENU_CALIB:
-    display.print(P(MENU_CALIB_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case 0:
-      display.print(P(OPTION_YES_TEXT));
-      break;
-    case 1:
-      display.print(P(OPTION_NO_TEXT));
-      break;
-    }
-    break;
-  case MENU_EXIT:
-    display.print(P(MENU_EXIT_HEADER));
-    display.setCursor(0, 1);
-    display.print((menu_item == menu_item_selected) ? '+' : ' ');
-    switch (menu_item)
-    {
-    case 0:
-      display.print(P(OPTION_YES_TEXT));
-      break;
-    case 1:
-      display.print(P(OPTION_NO_TEXT));
-      break;
-    }
-    break;
   }
 }
 
@@ -1767,7 +1767,7 @@ void setup()
   display.print(P("SW:"));
   display.print(' ');
   display.print(P(SW_VERSION));
-  for (int i =0; i < 8; i++) display.print(' ');
+  for (int i = 0; i < 8; i++) display.print(' ');
 
   pinMode(GFI_TEST_PIN, OUTPUT);
   digitalWrite(GFI_TEST_PIN, LOW);
@@ -1873,6 +1873,172 @@ void setup()
 
 }
 
+void car_struct::loopCheckPilot(unsigned int car_state) {
+
+  // Check the pilot sense on each car.
+  //  unsigned int car_state = checkState();
+
+  if (paused || last_state == STATE_E)
+  {
+    switch (car_state)
+    {
+      case STATE_A:
+        // we were in error, but the car's been disconnected.
+        // If we are still paused, then
+        // we can't clear the error.
+        if (!paused)
+        {
+          // If not, clear the error state. The next time through
+          // will take us back to state A.
+          last_state = DUNNO;
+          logInfo(P("Car %c disconnected, clearing error"), carLetter());
+        }
+        else
+        {
+          // We're paused. We will fix up the display ourselves.
+          displayStatus(car | STATUS_UNPLUGGED);
+          //          display.setCursor(0, 1);
+          //          display.print(P("A: ---  "));
+          last_state = car_state;
+        }
+      // fall through...
+      case STATE_B:
+        // If we see a transition to state B, the error is still in effect, but complete (and
+        // cancel) any pending relay opening.
+        if (error_time != 0)
+        {
+          error_time = 0;
+          setRelay(LOW);
+          if (them.isCarCharging() || them.last_state == STATE_B)
+            car_b.setPilot(FULL);
+        }
+        if (paused && car_state == STATE_B)
+        {
+          // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
+          if ( last_state == STATE_A )
+          {
+            sequential_mode_tiebreak = car;
+            last_state = STATE_B;
+          }
+          displayStatus(CAR_A | STATUS_OFF | (operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A ? STATUS_TIEBREAK : 0));
+        }
+        break;
+    }
+  }
+  else if (car_state != last_state)
+  {
+    if (last_state != DUNNO)
+      logInfo(P("Car %c state transition: %s->%s."), carLetter(), state_str(last_state), state_str(car_state));
+    switch (operatingMode)
+    {
+      case MODE_SHARED:
+        shared_mode_transition(car_state);
+        break;
+      case MODE_SEQUENTIAL:
+        sequential_mode_transition(car_state);
+        break;
+    }
+  }
+
+}
+
+void car_struct::loopCurrentMonitor() {
+
+  // Update the ammeter display and check for overdraw conditions.
+  // We allow a 5 second grace because the J1772 spec requires allowing
+  // the car 5 seconds to respond to incoming pilot changes.
+  // If the overdraw condition is acute enough, we'll be blowing fuses
+  // in hardware, so this isn't as dire a condition as it sounds.
+  // More likely what it means is that the car hasn't reacted to an
+  // attempt to reduce it to half power (and the other car has not yet
+  // been turned on), so we must error them out before letting the other
+  // car start.
+  if (relay_state == HIGH && last_state != STATE_E)   // Only check the ammeter if the power is actually on and we're not errored
+  {
+    unsigned long car_draw = readCurrent();
+
+    {
+      unsigned long now = millis();
+      if (now - last_current_log > CURRENT_LOG_INTERVAL)
+      {
+        last_current_log = now;
+        logInfo(P("Car %c current draw %lu mA"), carLetter(), car_draw);
+      }
+    }
+
+    // If the other car is charging, then we can only have half power
+    unsigned long incomingPilotMilliamps = 1000ul * persisted.max_amps;
+    unsigned long car_limit = incomingPilotMilliamps / ((pilot_state == HALF) ? 2 : 1);
+
+    if (car_draw > car_limit + OVERDRAW_GRACE_AMPS)
+    {
+      // car A has begun an over-draw condition. They have 5 seconds of grace before we pull the plug.
+      if (overdraw_begin == 0)
+      {
+        overdraw_begin = millis();
+      }
+      else
+      {
+        if (millis() - overdraw_begin > OVERDRAW_GRACE_PERIOD)
+        {
+          error(car | STATUS_ERR | STATUS_ERR_O);
+          return;
+        }
+      }
+    }
+    else
+    {
+      // car A is under its limit. Cancel any overdraw in progress
+      overdraw_begin = 0;
+    }
+    display.setCursor(0, 1);
+    display.print("A:");
+    display.print(formatMilliamps(car_draw));
+  }
+  else
+  {
+    // Car A is not charging
+    overdraw_begin = 0;
+    memset(current_samples, 0, sizeof(current_samples));
+  }
+
+}
+
+void car_struct::loopCheckDelayedTransition() {
+  // We need to use labs() here because we cached now early on, so it may actually be
+  // *before* the time in question
+  if (request_time != 0 && (millis() - request_time) > TRANSITION_DELAY)
+  {
+    // We've waited long enough.
+    logInfo(P("Delayed transition completed on car %c"), carLetter());
+    request_time = 0;
+    displayStatus(car | STATUS_ON );
+    //    display.setCursor(0, 1);
+    //    display.print(P("A: ON   "));
+    setRelay(HIGH);
+  }
+  if (error_time != 0 && (millis() - error_time) > ERROR_DELAY)
+  {
+    error_time = 0;
+    setRelay(LOW);
+    if (paused)
+    {
+      displayStatus( car | STATUS_OFF );
+      //      display.setCursor(0, 1);
+      //      display.print(P("A: off  "));
+      logInfo(P("Power withdrawn after pause delay on car %c"), carLetter());
+    }
+    else
+    {
+      logInfo(P("Power withdrawn after error delay on car %c"), carLetter());
+    }
+    if (them.isCarCharging() || them.last_state == STATE_B)
+      them.setPilot(FULL);
+  }
+}
+
+///////////////////////////////////////////////////////////
+// MAIN LOOP
 void loop()
 {
 
@@ -1985,14 +2151,21 @@ void loop()
       car_a.setPilot(HIGH);
       car_b.setPilot(HIGH);
       unsigned long now = millis();
-      car_a.error_time = now;
-      car_b.error_time = now;
-      car_a.last_state = DUNNO;
-      car_b.last_state = DUNNO;
-      car_a.request_time = 0;
-      car_b.request_time = 0;
-      car_a.seq_done = false;
-      car_b.seq_done = false;
+
+      for (int i = 0; i < 2; i++) {
+        cars[i].error_time = now;
+        cars[i].last_state = DUNNO;
+        cars[i].request_time = 0;
+        cars[i].seq_done = false;
+      }
+      //      car_a.error_time = now;
+      //      car_b.error_time = now;
+      //      car_a.last_state = DUNNO;
+      //      car_b.last_state = DUNNO;
+      //      car_a.request_time = 0;
+      //      car_b.request_time = 0;
+      //      car_a.seq_done = false;
+      //      car_b.seq_done = false;
       logInfo(P("Pausing."));
     }
     paused = true;
@@ -2034,159 +2207,170 @@ void loop()
     display.print(P("M:"));
     switch (operatingMode)
     {
-    case MODE_SHARED:
-      display.print(P("shared"));
-      break;
-    case MODE_SEQUENTIAL:
-      display.print(P("seqntl"));
-      break;
-    default:
-      display.print(P("UNK"));
-      break;
+      case MODE_SHARED:
+        display.print(P("shared"));
+        break;
+      case MODE_SEQUENTIAL:
+        display.print(P("seqntl"));
+        break;
+      default:
+        display.print(P("UNK"));
+        break;
     }
   }
 
-  // Check the pilot sense on each car.
+  // Is it essential that we keep differentiating between the new state and the last state?
+  // Some, if not all, logical paths are updating the last_state to the new state in those
+  // subroutines anyway. If yes, then we can probably remove car_x_state variables and just
+  // replace them with last_state from the structures.
   unsigned int car_a_state = car_a.checkState();
-
-  if (paused || car_a.last_state == STATE_E)
-  {
-    switch (car_a_state)
-    {
-    case STATE_A:
-      // we were in error, but the car's been disconnected.
-      // If we are still paused, then
-      // we can't clear the error.
-      if (!paused)
-      {
-        // If not, clear the error state. The next time through
-        // will take us back to state A.
-        car_a.last_state = DUNNO;
-        logInfo(P("Car A disconnected, clearing error"));
-      }
-      else
-      {
-        // We're paused. We will fix up the display ourselves.
-        displayStatus(CAR_A | STATUS_UNPLUGGED);
-        //          display.setCursor(0, 1);
-        //          display.print(P("A: ---  "));
-        car_a.last_state = car_a_state;
-      }
-    // fall through...
-    case STATE_B:
-      // If we see a transition to state B, the error is still in effect, but complete (and
-      // cancel) any pending relay opening.
-      if (car_a.error_time != 0)
-      {
-        car_a.error_time = 0;
-        car_a.setRelay(LOW);
-        if (car_b.isCarCharging() || car_b.last_state == STATE_B)
-          car_b.setPilot(FULL);
-      }
-      if (paused && car_a_state == STATE_B)
-      {
-        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        if ( car_a.last_state == STATE_A )
-        {
-          sequential_mode_tiebreak = CAR_A;
-          car_a.last_state = STATE_B;
-        }
-        //          display.setCursor(0, 1);
-        displayStatus(CAR_A | STATUS_OFF | (operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A ? STATUS_TIEBREAK : 0));
-        //            display.print(P("A: off* "));
-        //          else
-        //            display.print(P("A: off  "));
-      }
-      break;
-    }
-  }
-  else if (car_a_state != car_a.last_state)
-  {
-    if (car_a.last_state != DUNNO)
-      logInfo(P("Car A state transition: %s->%s."), state_str(car_a.last_state), state_str(car_a_state));
-    switch (operatingMode)
-    {
-    case MODE_SHARED:
-      car_a.shared_mode_transition(car_a_state);
-      break;
-    case MODE_SEQUENTIAL:
-      car_a.sequential_mode_transition(car_a_state);
-      break;
-    }
-  }
+  car_a.loopCheckPilot(car_a_state);
 
   unsigned int car_b_state = car_b.checkState();
-  if (paused || car_b.last_state == STATE_E)
-  {
-    switch (car_b_state)
-    {
-    case STATE_A:
-      // we were in error, but the car's been disconnected.
-      // If we are still paused, then
-      // we can't clear the error.
-      if (!paused)
-      {
-        // If not, clear the error state. The next time through
-        // will take us back to state A.
-        car_b.last_state = DUNNO;
-        logInfo(P("Car B disconnected, clearing error"));
-      }
-      else
-      {
-        // We're paused. We will fix up the display ourselves.
-        displayStatus(CAR_B | STATUS_UNPLUGGED);
-        //          display.setCursor(8, 1);
-        //          display.print(P("B: ---  "));
+  car_b.loopCheckPilot(car_b_state);
 
-        car_b.last_state = car_b_state;
-      }
-    // fall through...
-    case STATE_B:
-      // If we see a transition to state B, the error is still in effect, but complete (and
-      // cancel) any pending relay opening.
-      if (car_b.error_time != 0)
-      {
-        car_b.error_time = 0;
-        car_b.setRelay( LOW);
-        if (car_a.isCarCharging() || car_a.last_state == STATE_B)
-          car_a.setPilot(FULL);
-      }
-      if (paused && car_b_state == STATE_B)
-      {
-        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
-        // this will not engage if the state ws "DUNNO" which i guess what it is going to be after just
-        // entering pause or powering up. But i cannot use from DUNNO transition here since it may also be
-        // just entering the pause, in which case it will always reset the tiebreak to B no matter what.
-        // So resetting priority would require unplug-plug and not just pause-then-plug. It should be ok
-        // though.
-        if ( car_b.last_state == STATE_A )
-        {
-          sequential_mode_tiebreak = CAR_B;
-          car_b.last_state = STATE_B;
-        }
-        //          display.setCursor(8, 1);
-        displayStatus(CAR_B | STATUS_OFF | (( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_B) ? STATUS_TIEBREAK : 0 ));
-        //            display.print(P("B: off* "));
-        //          else
-        //            display.print(P("B: off  "));
-      }
-      break;
-    }
-  }
-  else if (car_b_state != car_b.last_state)
-  {
-    if (car_b.last_state != DUNNO)
-      logInfo(P("Car B state transition: %s->%s."), state_str(car_b.last_state), state_str(car_b_state));
-    switch (operatingMode)
-    {
-    case MODE_SHARED:
-      car_b.shared_mode_transition(car_b_state);
-      break;
-    case MODE_SEQUENTIAL:
-      car_b.sequential_mode_transition(car_b_state);
-      break;
-    }
-  }
+  //  // Check the pilot sense on each car.
+  //  unsigned int car_a_state = car_a.checkState();
+  //
+  //  if (paused || car_a.last_state == STATE_E)
+  //  {
+  //    switch (car_a_state)
+  //    {
+  //    case STATE_A:
+  //      // we were in error, but the car's been disconnected.
+  //      // If we are still paused, then
+  //      // we can't clear the error.
+  //      if (!paused)
+  //      {
+  //        // If not, clear the error state. The next time through
+  //        // will take us back to state A.
+  //        car_a.last_state = DUNNO;
+  //        logInfo(P("Car A disconnected, clearing error"));
+  //      }
+  //      else
+  //      {
+  //        // We're paused. We will fix up the display ourselves.
+  //        displayStatus(CAR_A | STATUS_UNPLUGGED);
+  //        //          display.setCursor(0, 1);
+  //        //          display.print(P("A: ---  "));
+  //        car_a.last_state = car_a_state;
+  //      }
+  //    // fall through...
+  //    case STATE_B:
+  //      // If we see a transition to state B, the error is still in effect, but complete (and
+  //      // cancel) any pending relay opening.
+  //      if (car_a.error_time != 0)
+  //      {
+  //        car_a.error_time = 0;
+  //        car_a.setRelay(LOW);
+  //        if (car_b.isCarCharging() || car_b.last_state == STATE_B)
+  //          car_b.setPilot(FULL);
+  //      }
+  //      if (paused && car_a_state == STATE_B)
+  //      {
+  //        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
+  //        if ( car_a.last_state == STATE_A )
+  //        {
+  //          sequential_mode_tiebreak = CAR_A;
+  //          car_a.last_state = STATE_B;
+  //        }
+  //        //          display.setCursor(0, 1);
+  //        displayStatus(CAR_A | STATUS_OFF | (operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A ? STATUS_TIEBREAK : 0));
+  //        //            display.print(P("A: off* "));
+  //        //          else
+  //        //            display.print(P("A: off  "));
+  //      }
+  //      break;
+  //    }
+  //  }
+  //  else if (car_a_state != car_a.last_state)
+  //  {
+  //    if (car_a.last_state != DUNNO)
+  //      logInfo(P("Car A state transition: %s->%s."), state_str(car_a.last_state), state_str(car_a_state));
+  //    switch (operatingMode)
+  //    {
+  //    case MODE_SHARED:
+  //      car_a.shared_mode_transition(car_a_state);
+  //      break;
+  //    case MODE_SEQUENTIAL:
+  //      car_a.sequential_mode_transition(car_a_state);
+  //      break;
+  //    }
+  //  }
+
+  //  unsigned int car_b_state = car_b.checkState();
+  //  if (paused || car_b.last_state == STATE_E)
+  //  {
+  //    switch (car_b_state)
+  //    {
+  //    case STATE_A:
+  //      // we were in error, but the car's been disconnected.
+  //      // If we are still paused, then
+  //      // we can't clear the error.
+  //      if (!paused)
+  //      {
+  //        // If not, clear the error state. The next time through
+  //        // will take us back to state A.
+  //        car_b.last_state = DUNNO;
+  //        logInfo(P("Car B disconnected, clearing error"));
+  //      }
+  //      else
+  //      {
+  //        // We're paused. We will fix up the display ourselves.
+  //        displayStatus(CAR_B | STATUS_UNPLUGGED);
+  //        //          display.setCursor(8, 1);
+  //        //          display.print(P("B: ---  "));
+  //
+  //        car_b.last_state = car_b_state;
+  //      }
+  //    // fall through...
+  //    case STATE_B:
+  //      // If we see a transition to state B, the error is still in effect, but complete (and
+  //      // cancel) any pending relay opening.
+  //      if (car_b.error_time != 0)
+  //      {
+  //        car_b.error_time = 0;
+  //        car_b.setRelay( LOW);
+  //        if (car_a.isCarCharging() || car_a.last_state == STATE_B)
+  //          car_a.setPilot(FULL);
+  //      }
+  //      if (paused && car_b_state == STATE_B)
+  //      {
+  //        // just plugged in -- set the tie break in sequential mode to this last plugged car during pause.
+  //        // this will not engage if the state ws "DUNNO" which i guess what it is going to be after just
+  //        // entering pause or powering up. But i cannot use from DUNNO transition here since it may also be
+  //        // just entering the pause, in which case it will always reset the tiebreak to B no matter what.
+  //        // So resetting priority would require unplug-plug and not just pause-then-plug. It should be ok
+  //        // though.
+  //        if ( car_b.last_state == STATE_A )
+  //        {
+  //          sequential_mode_tiebreak = CAR_B;
+  //          car_b.last_state = STATE_B;
+  //        }
+  //        //          display.setCursor(8, 1);
+  //        displayStatus(CAR_B | STATUS_OFF | (( operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_B) ? STATUS_TIEBREAK : 0 ));
+  //        //            display.print(P("B: off* "));
+  //        //          else
+  //        //            display.print(P("B: off  "));
+  //      }
+  //      break;
+  //    }
+  //  }
+  //  else if (car_b_state != car_b.last_state)
+  //  {
+  //    if (car_b.last_state != DUNNO)
+  //      logInfo(P("Car B state transition: %s->%s."), state_str(car_b.last_state), state_str(car_b_state));
+  //    switch (operatingMode)
+  //    {
+  //    case MODE_SHARED:
+  //      car_b.shared_mode_transition(car_b_state);
+  //      break;
+  //    case MODE_SEQUENTIAL:
+  //      car_b.sequential_mode_transition(car_b_state);
+  //      break;
+  //    }
+  //  }
+
   if (sequential_pilot_timeout != 0)
   {
     unsigned long now = millis();
@@ -2235,6 +2419,9 @@ void loop()
     }
   }
 
+  car_a.loopCurrentMonitor();
+  car_b.loopCurrentMonitor();
+
   // Update the ammeter display and check for overdraw conditions.
   // We allow a 5 second grace because the J1772 spec requires allowing
   // the car 5 seconds to respond to incoming pilot changes.
@@ -2244,157 +2431,162 @@ void loop()
   // attempt to reduce it to half power (and the other car has not yet
   // been turned on), so we must error them out before letting the other
   // car start.
-  if (car_a.relay_state == HIGH && car_a.last_state != STATE_E)   // Only check the ammeter if the power is actually on and we're not errored
-  {
-    unsigned long car_a_draw = car_a.readCurrent();
+  //  if (car_a.relay_state == HIGH && car_a.last_state != STATE_E)   // Only check the ammeter if the power is actually on and we're not errored
+  //  {
+  //    unsigned long car_a_draw = car_a.readCurrent();
+  //
+  //    {
+  //      unsigned long now = millis();
+  //      if (now - car_a.last_current_log > CURRENT_LOG_INTERVAL)
+  //      {
+  //        car_a.last_current_log = now;
+  //        logInfo(P("Car A current draw %lu mA"), car_a_draw);
+  //      }
+  //    }
+  //
+  //    // If the other car is charging, then we can only have half power
+  //    unsigned long car_a_limit = incomingPilotMilliamps / ((car_a.pilot_state == HALF) ? 2 : 1);
+  //
+  //    if (car_a_draw > car_a_limit + OVERDRAW_GRACE_AMPS)
+  //    {
+  //      // car A has begun an over-draw condition. They have 5 seconds of grace before we pull the plug.
+  //      if (car_a.overdraw_begin == 0)
+  //      {
+  //        car_a.overdraw_begin = millis();
+  //      }
+  //      else
+  //      {
+  //        if (millis() - car_a.overdraw_begin > OVERDRAW_GRACE_PERIOD)
+  //        {
+  //          error(CAR_A | STATUS_ERR | STATUS_ERR_O);
+  //          return;
+  //        }
+  //      }
+  //    }
+  //    else
+  //    {
+  //      // car A is under its limit. Cancel any overdraw in progress
+  //      car_a.overdraw_begin = 0;
+  //    }
+  //    display.setCursor(0, 1);
+  //    display.print("A:");
+  //    display.print(formatMilliamps(car_a_draw));
+  //  }
+  //  else
+  //  {
+  //    // Car A is not charging
+  //    car_a.overdraw_begin = 0;
+  //    memset(car_b.current_samples, 0, sizeof(car_b.current_samples));
+  //  }
 
-    {
-      unsigned long now = millis();
-      if (now - car_a.last_current_log > CURRENT_LOG_INTERVAL)
-      {
-        car_a.last_current_log = now;
-        logInfo(P("Car A current draw %lu mA"), car_a_draw);
-      }
-    }
 
-    // If the other car is charging, then we can only have half power
-    unsigned long car_a_limit = incomingPilotMilliamps / ((car_a.pilot_state == HALF) ? 2 : 1);
+  //  if (car_b.relay_state == HIGH && car_b.last_state != STATE_E)   // Only check the ammeter if the power is actually on and we're not errored
+  //  {
+  //    unsigned long car_b_draw = car_b.readCurrent();
+  //
+  //    {
+  //      unsigned long now = millis();
+  //      if (now - car_b.last_current_log > CURRENT_LOG_INTERVAL)
+  //      {
+  //        car_b.last_current_log = now;
+  //        logInfo(P("Car B current draw %lu mA"), car_b_draw);
+  //      }
+  //    }
+  //
+  //    // If the other car is charging, then we can only have half power
+  //    unsigned long car_b_limit = incomingPilotMilliamps / ( car_b.pilot_state == HALF ? 2 : 1);
+  //
+  //    if (car_b_draw > car_b_limit + OVERDRAW_GRACE_AMPS)
+  //    {
+  //      // car B has begun an over-draw condition. They have 5 seconds of grace before we pull the plug.
+  //      if (car_b.overdraw_begin == 0)
+  //      {
+  //        car_b.overdraw_begin = millis();
+  //      }
+  //      else
+  //      {
+  //        if (millis() - car_b.overdraw_begin > OVERDRAW_GRACE_PERIOD)
+  //        {
+  //          error(CAR_B | STATUS_ERR | STATUS_ERR_O);
+  //          return;
+  //        }
+  //      }
+  //    }
+  //    else
+  //    {
+  //      car_b.overdraw_begin = 0;
+  //    }
+  //    display.setCursor(8, 1);
+  //    display.print("B:");
+  //    display.print(formatMilliamps(car_b_draw));
+  //  }
+  //  else
+  //  {
+  //    // Car B is not charging
+  //    car_b.overdraw_begin = 0;
+  //    memset(car_b.current_samples, 0, sizeof(car_b.current_samples));
+  //  }
 
-    if (car_a_draw > car_a_limit + OVERDRAW_GRACE_AMPS)
-    {
-      // car A has begun an over-draw condition. They have 5 seconds of grace before we pull the plug.
-      if (car_a.overdraw_begin == 0)
-      {
-        car_a.overdraw_begin = millis();
-      }
-      else
-      {
-        if (millis() - car_a.overdraw_begin > OVERDRAW_GRACE_PERIOD)
-        {
-          error(CAR_A | STATUS_ERR | STATUS_ERR_O);
-          return;
-        }
-      }
-    }
-    else
-    {
-      // car A is under its limit. Cancel any overdraw in progress
-      car_a.overdraw_begin = 0;
-    }
-    display.setCursor(0, 1);
-    display.print("A:");
-    display.print(formatMilliamps(car_a_draw));
-  }
-  else
-  {
-    // Car A is not charging
-    car_a.overdraw_begin = 0;
-    memset(car_b.current_samples, 0, sizeof(car_b.current_samples));
-  }
+  car_a.loopCheckDelayedTransition();
+  car_b.loopCheckDelayedTransition();
 
-  if (car_b.relay_state == HIGH && car_b.last_state != STATE_E)   // Only check the ammeter if the power is actually on and we're not errored
-  {
-    unsigned long car_b_draw = car_b.readCurrent();
-
-    {
-      unsigned long now = millis();
-      if (now - car_b.last_current_log > CURRENT_LOG_INTERVAL)
-      {
-        car_b.last_current_log = now;
-        logInfo(P("Car B current draw %lu mA"), car_b_draw);
-      }
-    }
-
-    // If the other car is charging, then we can only have half power
-    unsigned long car_b_limit = incomingPilotMilliamps / ( car_b.pilot_state == HALF ? 2 : 1);
-
-    if (car_b_draw > car_b_limit + OVERDRAW_GRACE_AMPS)
-    {
-      // car B has begun an over-draw condition. They have 5 seconds of grace before we pull the plug.
-      if (car_b.overdraw_begin == 0)
-      {
-        car_b.overdraw_begin = millis();
-      }
-      else
-      {
-        if (millis() - car_b.overdraw_begin > OVERDRAW_GRACE_PERIOD)
-        {
-          error(CAR_B | STATUS_ERR | STATUS_ERR_O);
-          return;
-        }
-      }
-    }
-    else
-    {
-      car_b.overdraw_begin = 0;
-    }
-    display.setCursor(8, 1);
-    display.print("B:");
-    display.print(formatMilliamps(car_b_draw));
-  }
-  else
-  {
-    // Car B is not charging
-    car_b.overdraw_begin = 0;
-    memset(car_b.current_samples, 0, sizeof(car_b.current_samples));
-  }
-
-  // We need to use labs() here because we cached now early on, so it may actually be
-  // *before* the time in question
-  if (car_a.request_time != 0 && (millis() - car_a.request_time) > TRANSITION_DELAY)
-  {
-    // We've waited long enough.
-    logInfo(P("Delayed transition completed on car A"));
-    car_a.request_time = 0;
-    displayStatus(CAR_A | STATUS_ON );
-    //    display.setCursor(0, 1);
-    //    display.print(P("A: ON   "));
-    car_a.setRelay(HIGH);
-  }
-  if (car_a.error_time != 0 && (millis() - car_a.error_time) > ERROR_DELAY)
-  {
-    car_a.error_time = 0;
-    car_a.setRelay(LOW);
-    if (paused)
-    {
-      displayStatus( CAR_A | STATUS_OFF );
-      //      display.setCursor(0, 1);
-      //      display.print(P("A: off  "));
-      logInfo(P("Power withdrawn after pause delay on car A"));
-    }
-    else
-    {
-      logInfo(P("Power withdrawn after error delay on car A"));
-    }
-    if (car_b.isCarCharging() || car_b.last_state == STATE_B)
-      car_b.setPilot(FULL);
-  }
-  if (car_b.request_time != 0 && (millis() - car_b.request_time) > TRANSITION_DELAY)
-  {
-    logInfo(P("Delayed transition completed on car B"));
-    // We've waited long enough.
-    car_b.request_time = 0;
-    displayStatus(CAR_B | STATUS_ON);
-    //    display.setCursor(8, 1);
-    //    display.print(P("B: ON   "));
-    car_b.setRelay(HIGH);
-  }
-  if (car_b.error_time != 0 && (millis() - car_b.error_time) > ERROR_DELAY)
-  {
-    car_b.error_time = 0;
-    car_b.setRelay(LOW);
-    if (paused)
-    {
-      displayStatus(CAR_B | STATUS_OFF);
-      //      display.setCursor(8, 1);
-      //      display.print(P("B: off  "));
-      logInfo(P("Power withdrawn after pause delay on car B"));
-    }
-    else
-      logInfo(P("Power withdrawn after error delay on car B"));
-    if (car_a.isCarCharging() || car_a.last_state == STATE_B)
-      car_a.setPilot(FULL);
-  }
+  //  // We need to use labs() here because we cached now early on, so it may actually be
+  //  // *before* the time in question
+  //  if (car_a.request_time != 0 && (millis() - car_a.request_time) > TRANSITION_DELAY)
+  //  {
+  //    // We've waited long enough.
+  //    logInfo(P("Delayed transition completed on car A"));
+  //    car_a.request_time = 0;
+  //    displayStatus(CAR_A | STATUS_ON );
+  //    //    display.setCursor(0, 1);
+  //    //    display.print(P("A: ON   "));
+  //    car_a.setRelay(HIGH);
+  //  }
+  //  if (car_a.error_time != 0 && (millis() - car_a.error_time) > ERROR_DELAY)
+  //  {
+  //    car_a.error_time = 0;
+  //    car_a.setRelay(LOW);
+  //    if (paused)
+  //    {
+  //      displayStatus( CAR_A | STATUS_OFF );
+  //      //      display.setCursor(0, 1);
+  //      //      display.print(P("A: off  "));
+  //      logInfo(P("Power withdrawn after pause delay on car A"));
+  //    }
+  //    else
+  //    {
+  //      logInfo(P("Power withdrawn after error delay on car A"));
+  //    }
+  //    if (car_b.isCarCharging() || car_b.last_state == STATE_B)
+  //      car_b.setPilot(FULL);
+  //  }
+  //
+  //  if (car_b.request_time != 0 && (millis() - car_b.request_time) > TRANSITION_DELAY)
+  //  {
+  //    logInfo(P("Delayed transition completed on car B"));
+  //    // We've waited long enough.
+  //    car_b.request_time = 0;
+  //    displayStatus(CAR_B | STATUS_ON);
+  //    //    display.setCursor(8, 1);
+  //    //    display.print(P("B: ON   "));
+  //    car_b.setRelay(HIGH);
+  //  }
+  //  if (car_b.error_time != 0 && (millis() - car_b.error_time) > ERROR_DELAY)
+  //  {
+  //    car_b.error_time = 0;
+  //    car_b.setRelay(LOW);
+  //    if (paused)
+  //    {
+  //      displayStatus(CAR_B | STATUS_OFF);
+  //      //      display.setCursor(8, 1);
+  //      //      display.print(P("B: off  "));
+  //      logInfo(P("Power withdrawn after pause delay on car B"));
+  //    }
+  //    else
+  //      logInfo(P("Power withdrawn after error delay on car B"));
+  //    if (car_a.isCarCharging() || car_a.last_state == STATE_B)
+  //      car_a.setPilot(FULL);
+  //  }
 
 #ifdef QUICK_CYCLING_WORKAROUND
   if (pilot_release_holdoff_time != 0 && millis() > pilot_release_holdoff_time)
@@ -2437,12 +2629,12 @@ void loop()
     event = checkTimer();
     switch (event)
     {
-    case TE_PAUSE:
-      if (!paused) enterPause = true;
-      break;
-    case TE_UNPAUSE:
-      if (paused) enterPause = false;
-      break;
+      case TE_PAUSE:
+        if (!paused) enterPause = true;
+        break;
+      case TE_UNPAUSE:
+        if (paused) enterPause = false;
+        break;
     }
   }
 

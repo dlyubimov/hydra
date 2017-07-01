@@ -34,7 +34,7 @@
 #define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-#define UNIT_TESTS
+//#define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -330,7 +330,7 @@ extern char p_buffer[];
 
 struct car_struct {
   // CAR_A or CAR_B
-  unsigned int car;
+  unsigned char car;
   car_struct& them; 
   unsigned int relay_pin, pilot_out_pin, pilot_sense_pin, current_pin;
   volatile unsigned int relay_state;
@@ -369,6 +369,11 @@ struct car_struct {
   boolean isCarCharging();
   int checkState();
   unsigned long readCurrent();
+  char carLetter() { return 'A' + car - CAR_A; }
+  // main loop symmetrical logic:
+  void loopCheckPilot(unsigned int car_state);
+  void loopCurrentMonitor();
+  void loopCheckDelayedTransition();
 };
 
 #define EVENT_COUNT 4
