@@ -406,8 +406,12 @@ typedef struct event_struct {
 } event_type;
 
 // Calibration menu items
-#define CALIB_AMM_MAX 5 // this is in 0.1A units
-#define CALIB_PILOT_MAX 10 // this is in -% units. Can derate pilots up to 5%.
+
+// this is in 0.1A units
+#define CALIB_AMM_MAX 5 
+
+// this is in -% units. Can derate pilots up to 5%.
+#define CALIB_PILOT_MAX 10 
 
 typedef struct calib_struct {
   char amm_a, amm_b, pilot_a, pilot_b;
