@@ -692,21 +692,21 @@ unsigned long car_struct::readCurrent()
   return 0;
 }
 
-unsigned long rollRollingAverage(unsigned long array[], unsigned long new_value)
-{
-#if ROLLING_AVERAGE_SIZE == 0
-  return new_value;
-#else
-  unsigned long sum = new_value;
-  for (int i = ROLLING_AVERAGE_SIZE - 1; i >= 1; i--)
-  {
-    array[i] = array[i - 1];
-    sum += array[i];
-  }
-  array[0] = new_value;
-  return (sum / ROLLING_AVERAGE_SIZE);
-#endif
-}
+//unsigned long rollRollingAverage(unsigned long array[], unsigned long new_value)
+//{
+//#if ROLLING_AVERAGE_SIZE == 0
+//  return new_value;
+//#else
+//  unsigned long sum = new_value;
+//  for (int i = ROLLING_AVERAGE_SIZE - 1; i >= 1; i--)
+//  {
+//    array[i] = array[i - 1];
+//    sum += array[i];
+//  }
+//  array[0] = new_value;
+//  return (sum / ROLLING_AVERAGE_SIZE);
+//#endif
+//}
 
 // So the desired logic is as follows:
 // (1) If one or none cars are plugged, the behavior is really no different from shared mode.
@@ -1976,7 +1976,7 @@ void car_struct::loopCurrentMonitor() {
   {
     // Car A is not charging
     overdraw_begin = 0;
-    memset(current_samples, 0, sizeof(current_samples));
+//    memset(current_samples, 0, sizeof(current_samples));
   }
 
 }

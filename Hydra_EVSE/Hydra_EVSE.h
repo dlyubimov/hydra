@@ -342,7 +342,7 @@ struct car_struct {
   unsigned long last_current_log;
   boolean seq_done = false;
   unsigned int pilot_state;
-  unsigned long current_samples[ROLLING_AVERAGE_SIZE];
+//  unsigned long current_samples[ROLLING_AVERAGE_SIZE];
 
   car_struct(unsigned int car, int themOffset, unsigned int relay_pin, 
   unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
@@ -360,7 +360,7 @@ struct car_struct {
     last_current_log(0),
     pilot_state(LOW)
   {
-    memset(current_samples, 0, sizeof(current_samples));
+//    memset(current_samples, 0, sizeof(current_samples));
   };
 
   void setRelay(unsigned int state);
