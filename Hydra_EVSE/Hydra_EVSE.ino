@@ -398,7 +398,7 @@ void displayStatus(unsigned int status)
   display.print(carLetter); // 1
   display.print(':');  // 2
 
-  logDebug(P("status: %x, CAR:%c, status bits: %x, status mask: %x."), status, carLetter, status & STATUS_MASK, STATUS_MASK);
+  logTrace(P("status: %x, CAR:%c, status bits: %x, status mask: %x."), status, carLetter, status & STATUS_MASK, STATUS_MASK);
 
   switch ( status & STATUS_MASK)   // 7
   {

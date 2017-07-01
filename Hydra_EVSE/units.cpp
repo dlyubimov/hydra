@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////
 
 #include "Hydra_EVSE.h"
+#include "onlineSum.h"
 
 // If unit tests are declared, this is called the last thing from setup().
 
@@ -59,7 +60,7 @@ static void showDS(char* desc, unsigned int status) {
   display.clear();
   display.print (desc);
   displayStatus(status);
-  Delay(1000);
+  Delay(200);
 }
 
 void testDisplayStatus() {
@@ -95,8 +96,10 @@ void testDisplayStatus() {
   if ( cars[0].carLetter() != 'A' || cars[1].carLetter() != 'B' )
     logInfo(P("carLetter() UNIT FAIL"));
 
-  if ( cars[0].dispCol() != 0 || cars[1].dispCol() != 8 ) 
-    logInfo(P("dispCol() UNIT FAIL"));    
+  if ( cars[0].dispCol() != 0 || cars[1].dispCol() != 8 )
+    logInfo(P("dispCol() UNIT FAIL"));
+
+  logInfo (P("displayStatus DONE."));
 }
 
 
@@ -105,10 +108,37 @@ static void testMenuSetup() {
   doMenu(true);
 }
 
+static void testEWASumSetup() {
+  //  logInfo(P("sizeof(double)=%d"), sizeof(double));
+  //  logInfo(P("sizeof(float)=%d"), sizeof(float));
+
+  EWASumD sum(100);
+
+  boolean fail = false;
+  sum.update(5, 1000);
+  if ( abs(sum.ewa() - 5.0) > 1e-10) fail = true;
+
+    sum.update(10, 1100);
+  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+
+  // update-in-the-past test.
+  sum.reset();
+
+  sum.update(10, 1100);
+  if ( abs(sum.ewa() - 10) > 1e-10) fail = true;
+
+  sum.update(5, 1000);
+  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+
+  if ( fail) logInfo(P("EWASum UNIT FAIL"));
+  else logInfo(P("EWASum DONE."));
+}
+
 
 int unitsSetup() {
 
   testEepromSetup();
+  testEWASumSetup();
   testDisplayStatus();
   testMenuSetup();
   return false;
