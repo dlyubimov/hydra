@@ -55,21 +55,21 @@ static void testEepromSetup() {
 }
 
 
-static void testDS(char* desc, unsigned int status) {
+static void showDS(char* desc, unsigned int status) {
   display.clear();
   display.print (desc);
   displayStatus(status);
-  Delay(3000);
+  Delay(1000);
 }
 
 void testDisplayStatus() {
-  testDS(P("A&B UNPL"), BOTH | STATUS_UNPLUGGED);
-  testDS(P("A&B off"), BOTH | STATUS_OFF);
-  testDS(P("B off tie"), CAR_B | STATUS_OFF | STATUS_TIEBREAK);
-  testDS(P("A off tie"), CAR_A | STATUS_OFF | STATUS_TIEBREAK);
-  testDS(P("A&B on"), BOTH | STATUS_ON);
-  testDS(P("A&B done"), BOTH | STATUS_DONE);
-  testDS(P("A&B wait"), BOTH | STATUS_WAIT);
+  showDS(P("A&B UNPL"), BOTH | STATUS_UNPLUGGED);
+  showDS(P("A&B off"), BOTH | STATUS_OFF);
+  showDS(P("B off tie"), CAR_B | STATUS_OFF | STATUS_TIEBREAK);
+  showDS(P("A off tie"), CAR_A | STATUS_OFF | STATUS_TIEBREAK);
+  showDS(P("A&B on"), BOTH | STATUS_ON);
+  showDS(P("A&B done"), BOTH | STATUS_DONE);
+  showDS(P("A&B wait"), BOTH | STATUS_WAIT);
 
   char* msg = P("incorrect letter %c UNIT FAIL");
   if ( 'F' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_F) )
@@ -85,12 +85,12 @@ void testDisplayStatus() {
   if ( 'E' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_E) )
     logInfo(msg, 'E');
 
-  testDS(P("A&B ERR G"), BOTH | STATUS_ERR | STATUS_ERR_G);
-  testDS(P("A&B ERR F"), BOTH | STATUS_ERR | STATUS_ERR_F);
-  testDS(P("A&B ERR T"), BOTH | STATUS_ERR | STATUS_ERR_T);
-  testDS(P("A&B ERR O"), BOTH | STATUS_ERR | STATUS_ERR_O);
-  testDS(P("A&B ERR E"), BOTH | STATUS_ERR | STATUS_ERR_E);
-  testDS(P("A&B ERR R"), BOTH | STATUS_ERR | STATUS_ERR_R);
+  showDS(P("A&B ERR G"), BOTH | STATUS_ERR | STATUS_ERR_G);
+  showDS(P("A&B ERR F"), BOTH | STATUS_ERR | STATUS_ERR_F);
+  showDS(P("A&B ERR T"), BOTH | STATUS_ERR | STATUS_ERR_T);
+  showDS(P("A&B ERR O"), BOTH | STATUS_ERR | STATUS_ERR_O);
+  showDS(P("A&B ERR E"), BOTH | STATUS_ERR | STATUS_ERR_E);
+  showDS(P("A&B ERR R"), BOTH | STATUS_ERR | STATUS_ERR_R);
 
 
 }
@@ -103,6 +103,7 @@ static void testMenuSetup() {
 
 
 int unitsSetup() {
+
   testEepromSetup();
   testDisplayStatus();
   testMenuSetup();

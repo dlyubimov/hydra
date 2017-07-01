@@ -34,7 +34,7 @@
 #define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-//#define UNIT_TESTS
+#define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -476,6 +476,16 @@ extern persisted_struct persisted;
 extern void Delay(unsigned int);
 extern void displayStatus(unsigned int status);
 extern char errLetter(unsigned int status);
+extern boolean &enable_dst;
+extern Timezone dst;
+
+
+///////////////////////////////////////////////////////////
+// Inline declarations
+static inline time_t localTime()
+{
+  return enable_dst ? dst.toLocal(now()) : now();
+}
 
 
 #endif // ___HYDRA_EVSE_H___

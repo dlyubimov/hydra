@@ -186,9 +186,26 @@ void persisted_struct::reset()
   signature = PERSIST_SIG;
   operatingMode = MODE_SHARED;
   max_amps = currentMenuChoices[0];
-  enable_dst = false;
+  
+  // By default, use the time zone for schedule.
+  enable_dst = true;
   rtc_cal = 0;
   for (int i = 0; i < EVENT_COUNT; i++) events[i].reset();
+
+  // Set up events hours according to PGE EV-A TOU schedule: 
+  // Weekends off peak 7pm to 3 pm; no partial peak. 
+  // The idea is to pause for peak on any day and for partial and full peak on weekdays
+  // (so on weekdays, if unpaused manually for partial peak, will pause again for full peak).
+  unsigned char weekdays = -1u >> (sizeof(int) << 3) - 5  << 1;
+  
+  // Pause any day at 7am and resume at 11pm on weekdays.
+  events[0].dow_mask =  events[1].dow_mask = weekdays;
+  events[0].hour = 23; events[1].hour = 7;
+
+  // Weekends: start at 7pm and pause (any day) on 3pm
+  events[2].dow_mask = ~weekdays; events[2].hour = 19;
+  events[3].dow_mask = -1u; events[3].hour = 15;
+  
   calib.reset();
 }
 
@@ -1107,11 +1124,6 @@ static void gfiSelfTest()
   }
   Delay(GFI_TEST_DEBOUNCE_TIME);
   gfiTriggered = false;
-}
-
-static inline time_t localTime()
-{
-  return enable_dst ? dst.toLocal(now()) : now();
 }
 
 void doClockMenu(boolean initialize)
