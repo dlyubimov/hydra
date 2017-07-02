@@ -250,6 +250,13 @@
 // doe RB = 27 - Mega Hydra production
 //#define CURRENT_SCALE_FACTOR 184
 
+// Irregular-sampled EWA half-period for ammeter displays (the time after which data points a weighed 1/2
+// w.r.t. most recent data point). This is for Ammeter display only, it does not affect current measurements
+// for overdraw etc. purposes.
+#define AMM_DISPLAY_HALF_PERIOD 1500
+
+
+
 #define LOG_NONE 0
 #define LOG_INFO 1
 #define LOG_DEBUG 2
@@ -329,9 +336,6 @@ extern char p_buffer[];
 #ifdef UNIT_TESTS
 #include "units.h"
 #endif
-
-// EWA half-period for ammeter displays
-#define AMM_DISPLAY_HALF_PERIOD 3000
 
 struct car_struct {
   // CAR_A or CAR_B
