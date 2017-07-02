@@ -633,13 +633,13 @@ int car_struct::checkState()
 
 static inline unsigned long ulong_sqrt(unsigned long in)
 {
-  unsigned long out;
-  // find the last int whose square is not too big
-  // Yes, it's wasteful, but we only theoretically ever have to go to 512.
-  // Removing floating point saves us almost 1K of flash.
-  for (out = 1; out * out <= in; out++) ;
-  return out - 1;
-  //  return (unsigned long)sqrt((float)in);
+  //  unsigned long out;
+  //  // find the last int whose square is not too big
+  //  // Yes, it's wasteful, but we only theoretically ever have to go to 512.
+  //  // Removing floating point saves us almost 1K of flash.
+  //  for (out = 1; out * out <= in; out++) ;
+  //  return out - 1;
+  return sqrt((double)in);
 }
 
 unsigned long car_struct::readCurrent()
@@ -1967,16 +1967,21 @@ void car_struct::loopCurrentMonitor() {
       // car A is under its limit. Cancel any overdraw in progress
       overdraw_begin = 0;
     }
+
+    // update the ammeter display.
+    ammSum.update(car_draw, millis());
+
     display.setCursor(dispCol(), 1);
     display.print(carLetter());
     display.print(':');
-    display.print(formatMilliamps(car_draw));
+    display.print(formatMilliamps(ammSum.ewa()));
   }
   else
   {
     // Car A is not charging
     overdraw_begin = 0;
-//    memset(current_samples, 0, sizeof(current_samples));
+    ammSum.reset();
+    //    memset(current_samples, 0, sizeof(current_samples));
   }
 
 }

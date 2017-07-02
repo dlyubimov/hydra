@@ -29,12 +29,13 @@
 #include <Time.h>
 #include <DS1307RTC.h>
 #include <Timezone.h>
+#include "onlineSum.h"
 
 // SW version
 #define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-//#define UNIT_TESTS
+// #define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -329,6 +330,9 @@ extern char p_buffer[];
 #include "units.h"
 #endif
 
+// EWA half-period for ammeter displays
+#define AMM_DISPLAY_HALF_PERIOD 3000
+
 struct car_struct {
   // CAR_A or CAR_B
   unsigned char car;
@@ -342,7 +346,7 @@ struct car_struct {
   unsigned long last_current_log;
   boolean seq_done = false;
   unsigned int pilot_state;
-//  unsigned long current_samples[ROLLING_AVERAGE_SIZE];
+  EWASumD ammSum;
 
   car_struct(unsigned int car, int themOffset, unsigned int relay_pin, 
   unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
@@ -358,9 +362,9 @@ struct car_struct {
     request_time(0),
     error_time(0),
     last_current_log(0),
-    pilot_state(LOW)
+    pilot_state(LOW),
+    ammSum(AMM_DISPLAY_HALF_PERIOD)
   {
-//    memset(current_samples, 0, sizeof(current_samples));
   };
 
   void setRelay(unsigned int state);
@@ -490,6 +494,8 @@ extern persisted_struct persisted;
 extern void Delay(unsigned int);
 extern void displayStatus(unsigned int status);
 extern char errLetter(unsigned int status);
+extern char *formatMilliamps(unsigned long milliamps);
+
 extern boolean &enable_dst;
 extern Timezone dst;
 extern car_struct cars[];

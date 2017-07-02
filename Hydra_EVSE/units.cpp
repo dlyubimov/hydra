@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////
 
 #include "Hydra_EVSE.h"
-#include "onlineSum.h"
 
 // If unit tests are declared, this is called the last thing from setup().
 
@@ -109,8 +108,6 @@ static void testMenuSetup() {
 }
 
 static void testEWASumSetup() {
-  //  logInfo(P("sizeof(double)=%d"), sizeof(double));
-  //  logInfo(P("sizeof(float)=%d"), sizeof(float));
 
   EWASumD sum(100);
 
@@ -118,8 +115,8 @@ static void testEWASumSetup() {
   sum.update(5, 1000);
   if ( abs(sum.ewa() - 5.0) > 1e-10) fail = true;
 
-    sum.update(10, 1100);
-  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+  sum.update(10, 1100);
+  if ( isnan(sum.ewa()) || abs(sum.ewa() - 8.333333333333333) > 1e-6) fail = true;
 
   // update-in-the-past test.
   sum.reset();
@@ -128,10 +125,13 @@ static void testEWASumSetup() {
   if ( abs(sum.ewa() - 10) > 1e-10) fail = true;
 
   sum.update(5, 1000);
-  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+  if ( isnan(sum.ewa()) || abs(sum.ewa() - 8.333333333333333) > 1e-6) fail = true;
+
+  logDebug(P("%s"), formatMilliamps(100*sum.ewa()));
+  logDebug(P("sizeof ewasum:%d"),sizeof(EWASumD));
 
   if ( fail) logInfo(P("EWASum UNIT FAIL"));
-  else logInfo(P("EWASum DONE."));
+  else logInfo(P("EWASum OK."));
 }
 
 
