@@ -923,13 +923,13 @@ void car_struct::shared_mode_transition(unsigned int car_state)
           // We turned back on before the grace period. We can just go, since they
           // still have a half-pilot.
           pilot_release_holdoff_time = 0; // cancel the grace period
-          setPilot(them, HALF); // *should* be redundant
-          setPilot(us, HALF); // redundant, unless we went straight from A to C.
+          them.setPilot(HALF); // *should* be redundant
+          setPilot(HALF); // redundant, unless we went straight from A to C.
           displayStatus(us | STATUS_ON);
           //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
           //          display.print((us == CAR_A) ? "A" : "B");
           //          display.print(P(": ON   "));
-          setRelay(us, HIGH);
+          setRelay(HIGH);
         }
         else
         {
@@ -1886,7 +1886,7 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
           error_time = 0;
           setRelay(LOW);
           if (them.isCarCharging() || them.last_state == STATE_B)
-            car_b.setPilot(FULL);
+            them.setPilot(FULL);
         }
         if (paused && car_state == STATE_B)
         {
@@ -1896,7 +1896,7 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
             sequential_mode_tiebreak = car;
             last_state = STATE_B;
           }
-          displayStatus(CAR_A | STATUS_OFF | (operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == CAR_A ? STATUS_TIEBREAK : 0));
+          displayStatus(car | STATUS_OFF | (operatingMode == MODE_SEQUENTIAL && sequential_mode_tiebreak == car ? STATUS_TIEBREAK : 0));
         }
         break;
     }
@@ -2017,6 +2017,26 @@ void car_struct::loopCheckDelayedTransition() {
     if (them.isCarCharging() || them.last_state == STATE_B)
       them.setPilot(FULL);
   }
+}
+
+// This switches offer, sequential mode only, from a current car in mode B to the other car currently 
+// also in mode B, based on offer timeout.
+void car_struct::loopSeqHandover() {
+      {
+        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
+        // move the pilot offer.
+        setPilot(HIGH);
+        them.setPilot(FULL);
+        sequential_pilot_timeout = now;
+        displayStatus(car | (seq_done ? STATUS_DONE : STATUS_WAIT));
+        //        display.setCursor(0, 1);
+        //        if ( seq_car_a_done )
+        //          display.print(P("A: done "));
+        //        else
+        //          display.print(P("A: wait "));
+        displayStatus(them.car | STATUS_OFF );
+        //        display.print(P("B: off  "));
+      }
 }
 
 ///////////////////////////////////////////////////////////
@@ -2359,35 +2379,37 @@ void loop()
     if (now - sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT)
     {
       if (car_a.pilot_state == FULL)
-      {
-        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
-        car_a.setPilot(HIGH);
-        car_b.setPilot(FULL);
-        sequential_pilot_timeout = now;
-        displayStatus(CAR_A | (car_a.seq_done ? STATUS_DONE : STATUS_WAIT));
-        //        display.setCursor(0, 1);
-        //        if ( seq_car_a_done )
-        //          display.print(P("A: done "));
-        //        else
-        //          display.print(P("A: wait "));
-        displayStatus(CAR_B | STATUS_OFF );
-        //        display.print(P("B: off  "));
-      }
+        car_a.loopSeqHandover();
+//      {
+//        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
+//        car_a.setPilot(HIGH);
+//        car_b.setPilot(FULL);
+//        sequential_pilot_timeout = now;
+//        displayStatus(CAR_A | (car_a.seq_done ? STATUS_DONE : STATUS_WAIT));
+//        //        display.setCursor(0, 1);
+//        //        if ( seq_car_a_done )
+//        //          display.print(P("A: done "));
+//        //        else
+//        //          display.print(P("A: wait "));
+//        displayStatus(CAR_B | STATUS_OFF );
+//        //        display.print(P("B: off  "));
+//      }
       else if (car_b.pilot_state == FULL)
-      {
-        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
-        car_b.setPilot(HIGH);
-        car_a.setPilot(FULL);
-        sequential_pilot_timeout = now;
-        displayStatus(CAR_B | (car_b.seq_done ? STATUS_DONE : STATUS_WAIT));
-        displayStatus(CAR_A | STATUS_OFF);
-        //        display.setCursor(0, 1);
-        //        display.print(P("A: off  "));
-        //        if ( seq_car_b_done )
-        //          display.print(P("B: done "));
-        //        else
-        //          display.print(P("B: wait "));
-      }
+        car_b.loopSeqHandover();
+//      {
+//        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
+//        car_b.setPilot(HIGH);
+//        car_a.setPilot(FULL);
+//        sequential_pilot_timeout = now;
+//        displayStatus(CAR_B | (car_b.seq_done ? STATUS_DONE : STATUS_WAIT));
+//        displayStatus(CAR_A | STATUS_OFF);
+//        //        display.setCursor(0, 1);
+//        //        display.print(P("A: off  "));
+//        //        if ( seq_car_b_done )
+//        //          display.print(P("B: done "));
+//        //        else
+//        //          display.print(P("B: wait "));
+//      }
     }
   }
 
