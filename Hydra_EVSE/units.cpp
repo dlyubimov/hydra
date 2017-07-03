@@ -23,7 +23,30 @@
 #include "Hydra_EVSE.h"
 #include "onlineSum.h"
 
-// If unit tests are declared, this is called the last thing from setup().
+
+
+static char* strDate(time_t time) {
+  static char str[11];
+  tmElements_t els;
+  breakTime(time, els);
+  snprintf(str, sizeof(str), "%d/%d/%d", (int)els.Month, (int)els.Day, (int)tmYearToCalendar(els.Year));
+  return str;
+}
+
+///////////////////////////////////////////////////
+// If unit tests are declared, these tests are called the last thing from setup().
+
+#define assert(_cond_, _str_) if (! _cond_) { logInfo(P("%s UNIT FAIL."), P(_str_)); return; }
+#define ok(_str_) logInfo(P("%s UNIT OK."), _str_);
+
+static void testDst() {
+  tmElements_t els;
+  els.Year = CalendarYrToTm(2017);
+  els.Month = 7;
+  els.Day = 3;
+  els.Hour = 0;
+
+}
 
 static void testEepromSetup() {
 
@@ -36,23 +59,20 @@ static void testEepromSetup() {
   persisted.enable_dst = true;
   persisted.eepromWrite();
   persisted_struct clone1;
-  if (clone1.operatingMode != MODE_SEQUENTIAL || !clone1.enable_dst) {
-    logInfo(P("eeprom write/read UNIT FAIL (actual: %d)."), (int)clone1.operatingMode);
-    return;
-  }
+
+  assert (clone1.operatingMode == MODE_SEQUENTIAL, "eeprom-mode");
+  assert(clone1.enable_dst, "eeprom-dst");
 
   // invalid signature reset test
   persisted.signature = 0xff;
   persisted.validate();
 
   persisted_struct clone2;
-  if ( persisted.signature != PERSIST_SIG || clone2.signature != PERSIST_SIG || clone2.operatingMode != MODE_SHARED ) {
-    logInfo(P("eeprom sig validation UNIT FAIL."));
-    return;
-  }
+  assert(persisted.signature == PERSIST_SIG, "eeprom-sig");
+  assert(clone2.signature == PERSIST_SIG, "eeprom-sig(2)");
+  assert(clone2.operatingMode == MODE_SHARED, "eeprom-mode(2)");
 
-  logDebug(P("eeprom UNIT OK."));
-
+  ok("eeprom");
 }
 
 
@@ -73,18 +93,12 @@ void testDisplayStatus() {
   showDS(P("A&B wait"), BOTH | STATUS_WAIT);
 
   char* msg = P("incorrect letter %c UNIT FAIL");
-  if ( 'F' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_F) )
-    logInfo(msg, 'F');
-  if ( 'O' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_O) )
-    logInfo(msg, 'O');
-  if ( 'G' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_G) )
-    logInfo(msg, 'G');
-  if ( 'T' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_T) )
-    logInfo(msg, 'T');
-  if ( 'R' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_R) )
-    logInfo(msg, 'R');
-  if ( 'E' != errLetter(BOTH | STATUS_ERR | STATUS_ERR_E) )
-    logInfo(msg, 'E');
+  assert( 'F' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_F), "errLetter");
+  assert( 'O' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_O), "errLetter" );
+  assert( 'G' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_G), "errLetter" );
+  assert( 'T' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_T), "errLetter" );
+  assert( 'R' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_R), "errLetter" );
+  assert( 'E' == errLetter(BOTH | STATUS_ERR | STATUS_ERR_E), "errLetter" );
 
   showDS(P("A&B ERR G"), BOTH | STATUS_ERR | STATUS_ERR_G);
   showDS(P("A&B ERR F"), BOTH | STATUS_ERR | STATUS_ERR_F);
@@ -93,13 +107,10 @@ void testDisplayStatus() {
   showDS(P("A&B ERR E"), BOTH | STATUS_ERR | STATUS_ERR_E);
   showDS(P("A&B ERR R"), BOTH | STATUS_ERR | STATUS_ERR_R);
 
-  if ( cars[0].carLetter() != 'A' || cars[1].carLetter() != 'B' )
-    logInfo(P("carLetter() UNIT FAIL"));
+  assert( cars[0].carLetter() == 'A' && cars[1].carLetter() == 'B', "ds-init");
+  assert( cars[0].dispCol() == 0 && cars[1].dispCol() == 8, "ds-col" );
 
-  if ( cars[0].dispCol() != 0 || cars[1].dispCol() != 8 )
-    logInfo(P("dispCol() UNIT FAIL"));
-
-  logInfo (P("displayStatus DONE."));
+  ok("displayStatus");
 }
 
 
@@ -114,24 +125,22 @@ static void testEWASumSetup() {
 
   EWASumD sum(100);
 
-  boolean fail = false;
   sum.update(5, 1000);
-  if ( abs(sum.ewa() - 5.0) > 1e-10) fail = true;
+  assert( abs(sum.ewa() - 5.0) < 1e-10, "ewa-sum");
 
-    sum.update(10, 1100);
-  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+  sum.update(10, 1100);
+  assert( abs(sum.ewa() - 7.5) > 1e-10, "ewa-sum");
 
   // update-in-the-past test.
   sum.reset();
 
   sum.update(10, 1100);
-  if ( abs(sum.ewa() - 10) > 1e-10) fail = true;
+  assert ( abs(sum.ewa() - 10) > 1e-10, "ewa-sum");
 
   sum.update(5, 1000);
-  if ( abs(sum.ewa() - 7.5) > 1e-10) fail = true;
+  assert( abs(sum.ewa() - 7.5) > 1e-10, "ewa-sum");
 
-  if ( fail) logInfo(P("EWASum UNIT FAIL"));
-  else logInfo(P("EWASum DONE."));
+  ok("ewa-sum");
 }
 
 

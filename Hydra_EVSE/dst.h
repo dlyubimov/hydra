@@ -42,14 +42,19 @@ struct DSTRule
   dst_t   dst;       // Whether the rule switches to summer or winter time
   uint8_t week;      // First, Second, Third, Fourth, or Last week of the month
   uint8_t dow;       // day of week, here and on per Time.h
-  uint8_t month;
-  uint8_t hour;
+  uint8_t mo;
+  uint8_t hr;
 
   boolean operator<(time_t& that);
 };
 // Exactly 2 rules are expected for the rules argument, in calendar succession.
 extern boolean isSummer(DSTRule* rules , time_t);
 extern time_t toDST(DSTRule *rules, time_t);
+
+#define sameWeekDow(_time_, _dow_)  ((_time_ / SECS_PER_DAY + _dow_ - dayOfWeek(_time_)) * SECS_PER_DAY)
+#define monthBegin(_time_) ((_time_ / SECS_PER_DAY + 1 - day(_time_)) * SECS_PER_DAY) 
+#define nextMonthBegin(_time_) monthBegin((_time_ / SECS_PER_DAY + 32 - day(_time_)) * SECS_PER_DAY)
+
 
 // We don't really need to support timezones. We just want to perform automatic DST switching.
 // The following are the U.S. DST rules. If you live elsewhere, the customize these. The params

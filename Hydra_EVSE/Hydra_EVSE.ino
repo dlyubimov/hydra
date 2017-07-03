@@ -69,10 +69,11 @@ unsigned char currentMenuChoices[] = { 12, 16, 20, 24, 28, 30, 32, 36, 40, 44, 5
 
 
 // Time zone rules. 
-// Use US_DST_RULES macro for US, EU_... for EU, and AU_... for Australia.
+// Use US_DST_RULES macro for US, EU_... for EU, and AU_... for Australia. Uncomment only one of
+// those as applicabble.
 US_DST_RULES(dstr);
-//EU_DST_RULES(dstr);
-//AU_DST_RULES(dstr);
+// EU_DST_RULES(dstr);
+// AU_DST_RULES(dstr);
 
 // Thanks to Gareth Evans at http://todbot.com/blog/2008/06/19/how-to-do-big-strings-in-arduino/
 // Note that you must be careful not to use this macro more than once per "statement", lest you

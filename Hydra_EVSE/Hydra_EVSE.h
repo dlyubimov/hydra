@@ -22,11 +22,7 @@
 #define ___HYDRA_EVSE_H___
 
 // Standard Arduino types like boolean
-#if ARDUINO >= 100
 #include <Arduino.h> 
-#else
-#include <WProgram.h> 
-#endif
 
 #include <avr/wdt.h>
 #include <Wire.h>
