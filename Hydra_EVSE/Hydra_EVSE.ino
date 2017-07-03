@@ -2016,13 +2016,13 @@ void car_struct::loopCheckDelayedTransition() {
 
 // This switches offer, sequential mode only, from a current car in mode B to the other car currently 
 // also in mode B, based on offer timeout.
-void car_struct::loopSeqHandover() {
+void car_struct::loopSeqHandover(unsigned long nowMs) {
       {
         logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
         // move the pilot offer.
         setPilot(HIGH);
         them.setPilot(FULL);
-        sequential_pilot_timeout = now;
+        sequential_pilot_timeout = nowMs;
         displayStatus(car | (seq_done ? STATUS_DONE : STATUS_WAIT));
         //        display.setCursor(0, 1);
         //        if ( seq_car_a_done )
@@ -2370,11 +2370,11 @@ void loop()
 
   if (sequential_pilot_timeout != 0)
   {
-    unsigned long now = millis();
-    if (now - sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT)
+    unsigned long nowMs = millis();
+    if (nowMs - sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT)
     {
       if (car_a.pilot_state == FULL)
-        car_a.loopSeqHandover();
+        car_a.loopSeqHandover(nowMs);
 //      {
 //        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
 //        car_a.setPilot(HIGH);
@@ -2390,7 +2390,7 @@ void loop()
 //        //        display.print(P("B: off  "));
 //      }
       else if (car_b.pilot_state == FULL)
-        car_b.loopSeqHandover();
+        car_b.loopSeqHandover(nowMs);
 //      {
 //        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_A));
 //        car_b.setPilot(HIGH);
