@@ -382,7 +382,7 @@ struct car_struct {
   void loopCheckPilot(unsigned int car_state);
   void loopCurrentMonitor();
   void loopCheckDelayedTransition();
-  void loopSeqHandover();
+  void loopSeqHandover(unsigned long nowMs);
   // Inlines 
   char carLetter() { return 'A' + car - CAR_A; }
   // Returns 0 for car A and 8 for car B. Typically, to print display status or current.
