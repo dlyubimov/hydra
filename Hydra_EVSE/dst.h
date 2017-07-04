@@ -45,7 +45,8 @@ struct DSTRule
   uint8_t mo;
   uint8_t hr;
 
-  boolean operator<(time_t& that);
+  boolean operator<=(time_t that);
+  boolean operator>(time_t that) { return ! (*this <= that); }
 };
 // Exactly 2 rules are expected for the rules argument, in calendar succession.
 extern boolean isSummer(DSTRule* rules , time_t);
@@ -53,21 +54,21 @@ extern time_t toDST(DSTRule *rules, time_t);
 
 #define sameWeekDow(_time_, _dow_)  ((_time_ / SECS_PER_DAY + _dow_ - dayOfWeek(_time_)) * SECS_PER_DAY)
 
-#define monthBegin(_time_) ((_time_ / SECS_PER_DAY + 1 - day(_time_)) * SECS_PER_DAY) 
+#define monthBegin(_time_) ((_time_ / SECS_PER_DAY + 1 - day(_time_)) * SECS_PER_DAY)
 
 #define nextMonthBegin(_time_) monthBegin((_time_ / SECS_PER_DAY + 32 - day(_time_)) * SECS_PER_DAY)
 
-// This returns next day of week w.r.t. current time. if today is the same day of week 
-// as the one requested, returns today's midnight. 
+// This returns next day of week w.r.t. current time. if today is the same day of week
+// as the one requested, returns today's midnight.
 inline time_t nextDow (time_t _time_, uint8_t _dow_) {
   time_t sameWDow = sameWeekDow( _time_, _dow_);
-  return sameWDow >= previousMidnight(_time_)? sameWDow : sameWDow + SECS_PER_WEEK;
+  return sameWDow >= previousMidnight(_time_) ? sameWDow : sameWDow + SECS_PER_WEEK;
 }
 
 // returns previous closest day of week to the _time_. If today is the same as _dow_, returns today's midnight.
 inline time_t previousDow (time_t _time_, uint8_t _dow_) {
   time_t sameWDow = sameWeekDow( _time_, _dow_);
-  return sameWDow <= previousMidnight(_time_)? sameWDow : sameWDow - SECS_PER_WEEK;
+  return sameWDow <= previousMidnight(_time_) ? sameWDow : sameWDow - SECS_PER_WEEK;
 }
 
 

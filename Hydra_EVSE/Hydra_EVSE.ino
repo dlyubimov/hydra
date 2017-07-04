@@ -71,7 +71,7 @@ unsigned char currentMenuChoices[] = { 12, 16, 20, 24, 28, 30, 32, 36, 40, 44, 5
 // Time zone rules. 
 // Use US_DST_RULES macro for US, EU_... for EU, and AU_... for Australia. Uncomment only one of
 // those as applicabble.
-US_DST_RULES(dstr);
+US_DST_RULES(dstRules);
 // EU_DST_RULES(dstr);
 // AU_DST_RULES(dstr);
 
@@ -956,9 +956,10 @@ unsigned int checkTimer()
 
   event_struct* events(persisted.events);
 
-  unsigned char ev_hour = hour(localTime());
-  unsigned char ev_minute = minute(localTime());
-  unsigned char ev_dow = dayOfWeek(localTime());
+  time_t lt = localTime();
+  unsigned char ev_hour = hour(lt);
+  unsigned char ev_minute = minute(lt);
+  unsigned char ev_dow = dayOfWeek(lt);
   unsigned char ev_dow_mask = 1 << (ev_dow - 1);
   for (unsigned int i = 0; i < EVENT_COUNT; i++)
   {
@@ -1093,17 +1094,18 @@ void doClockMenu(boolean initialize)
   {
     display.clear();
     display.print(P("Set Clock"));
+    time_t lt = localTime();
 #ifdef CLOCK_24HOUR
-    editHour = hour(localTime());
+    editHour = hour(lt);
 #else
-    editHour = hourFormat12(localTime());
-    editMeridian = isPM(localTime()) ? 1 : 0;
+    editHour = hourFormat12(lt);
+    editMeridian = isPM(lt) ? 1 : 0;
 #endif
 
-    editMinute = minute(localTime());
-    editDay = day(localTime());
-    editMonth = month(localTime());
-    editYear = year(localTime());
+    editMinute = minute(lt);
+    editDay = day(lt);
+    editMonth = month(lt);
+    editYear = year(lt);
     if (editYear < FIRST_YEAR || editYear > LAST_YEAR) editYear = FIRST_YEAR;
     editCursor = 0;
     event = EVENT_LONG_PUSH; // we did a long push to get here.

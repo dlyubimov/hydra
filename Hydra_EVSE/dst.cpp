@@ -20,6 +20,7 @@
 
 #include "dst.h"
 
+
 boolean isSummer(DSTRule* rules , time_t t) {
 
   // The algorithm here is simple. in he current year,
@@ -27,7 +28,7 @@ boolean isSummer(DSTRule* rules , time_t t) {
   // otherwise, if we are past the first rule, we take that rule.
   // otherwise, we take second rule.
   for (int i = 1; i >= 0; i--) {
-    if ( rules[i] < t) return rules[i].dst == summer;
+    if ( rules[i] <= t) return rules[i].dst == summer;
   }
   // if we got here, we are before the first rule, which means we have to assume 
   // it is a continuation of the 2nd rule ( last rule in calendar order) from the
@@ -40,7 +41,7 @@ time_t toDST(DSTRule *rules, time_t t) {
 
 }
 
-boolean DSTRule::operator<(time_t& that) {
+boolean DSTRule::operator<=(time_t that) {
 
   uint8_t thatMo = month(that);
 
@@ -53,15 +54,14 @@ boolean DSTRule::operator<(time_t& that) {
   if ( week != Last)
     // our week enum starts with 0, so we will just multiply that by the 
     // week duration, and then find the next closest day of week w.r.t. that:
-    ruleBound = nextDow (monthBegin(that) + SECS_PER_WEEK * week, dow);
+    ruleBound = nextDow (monthBegin(that) + SECS_PER_WEEK * week, dow) + hr * SECS_PER_HOUR;
   else
     // handle last day of week in a month: take the last day of the month 
     // (which is the first day of the next month), and 
     // find the previous closest day of week.
-    ruleBound = previousDow(nextMonthBegin(that) - SECS_PER_DAY, dow);
+    ruleBound = previousDow(nextMonthBegin(that) - SECS_PER_DAY, dow) + hr * SECS_PER_HOUR;
 
   return ruleBound <= that;
-
 }
 
 

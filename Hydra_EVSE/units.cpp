@@ -36,32 +36,52 @@ static char* strDate(time_t time) {
 ///////////////////////////////////////////////////
 // If unit tests are declared, these tests are called the last thing from setup().
 
-#define assert(_cond_, _str_) if (! _cond_) { logInfo(P("%s UNIT FAIL."), _str_); return; }
+#define assert(_cond_, _str_) if (! (_cond_)) { logInfo(P("%s UNIT FAIL."), _str_); return; }
 #define ok(_str_) logInfo(P("%s UNIT OK."), _str_);
 
 static void testDstSetup() {
   tmElements_t els;
+  memset(&els,0,sizeof(els));
   els.Year = CalendarYrToTm(2017);
-  els.Month = 7;
-  els.Day = 3;
-  els.Hour = 0;
+//  els.Month = 7;
+//  els.Day = 3;
+//
+//  assert(!strcmp(strDate(makeTime(els)), "7/3/2017"), "strDate");
+//
+//  // Tests for finding previous. successive day of week.
+//  // Corner case: same day must point at the day in both cases.
+//  assert(!strcmp(strDate(nextDow(makeTime(els), 2)), "7/3/2017"), "nextDow"); // Next monday
+//  assert(!strcmp(strDate(previousDow(makeTime(els), 2)), "7/3/2017"), "prevDow"); // previous monday
+//
+//  // not same day.
+//  assert(!strcmp(strDate(nextDow(makeTime(els), 3)), "7/4/2017"), "nextDow(2)"); // Next Tuesday 7/4/2017
+//  assert(!strcmp(strDate(previousDow(makeTime(els), 3)), "6/27/2017"), "prevDow(2)"); // previous Tuesday 6/27/2017
+//
+//  // Month begin.
+//  assert(!strcmp(strDate(monthBegin(makeTime(els))), "7/1/2017"), "moBegin"); // this month begin 7/1/2017
+//  assert(!strcmp(strDate(nextMonthBegin(makeTime(els))), "8/1/2017"), "neMoBeg"); // next month begin 8/1/2017
 
-  assert(!strcmp(strDate(makeTime(els)), "7/3/2017"), "strDate");
+  // Boundary test . in 2017, the summer began on 3/12/17 and ends on 11/5/17 (winter time i guess).
+  US_DST_RULES(usRules);
+  els.Month = 3;
+  els.Day = 12;
+  els.Hour = 2;
+  time_t t = makeTime(els);
+  
+  assert( usRules[0] <= t, "summerBnd");
+  assert( usRules[0] > t -1, "summerBnd2");
 
-  // Tests for finding previous. successive day of week. 
-  // Corner case: same day must point at the day in both cases.
-  assert(!strcmp(strDate(nextDow(makeTime(els), 2)), "7/3/2017"), "nextDow"); // Next monday
-  assert(!strcmp(strDate(previousDow(makeTime(els), 2)), "7/3/2017"), "prevDow"); // previous monday
+  assert ( isSummer(usRules,t), "dst");
+  assert ( !isSummer(usRules, t-1), "dst1");
+  
+  els.Month = 11;
+  els.Day = 5;
+  t = makeTime(els);
+  
+  assert(isSummer(usRules, t-1), "dst2");
+  assert(!isSummer(usRules, t), "dst3");
 
-  // not same day.
-  assert(!strcmp(strDate(nextDow(makeTime(els), 3)), "7/4/2017"), "nextDow(2)"); // Next Tuesday 7/4/2017
-  assert(!strcmp(strDate(previousDow(makeTime(els), 3)), "6/27/2017"), "prevDow(2)"); // previous Tuesday 6/27/2017
-
-  // Month begin.
-  assert(!strcmp(strDate(monthBegin(makeTime(els))), "7/1/2017"), "moBegin"); // this month begin 7/1/2017
-  assert(!strcmp(strDate(nextMonthBegin(makeTime(els))), "8/1/2017"), "neMoBeg"); // next month begin 8/1/2017
-
-
+  ok("dst");
 }
 
 static void testEepromSetup() {

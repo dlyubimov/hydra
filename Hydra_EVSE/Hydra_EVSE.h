@@ -38,7 +38,7 @@
 #define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-#define UNIT_TESTS
+// #define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -497,14 +497,15 @@ extern char errLetter(unsigned int status);
 
 extern boolean &enable_dst;
 extern car_struct cars[];
-extern DSTRule dstr[2];
+extern DSTRule dstRules[2];
 
 
 ///////////////////////////////////////////////////////////
 // Inline declarations
 static inline time_t localTime()
 {
-  return toDST(dstr, now()); // for now
+  time_t t = now();
+  return persisted.enable_dst && isSummer(dstRules, t)? t + SECS_PER_HOUR : t;
 }
 
 
