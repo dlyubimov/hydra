@@ -67,29 +67,13 @@ unsigned char currentMenuChoices[] = { 12, 16, 20, 24, 28, 30, 32, 36, 40, 44, 5
 #define FIRST_YEAR 2010
 #define LAST_YEAR 2020
 
-// We don't really need to support timezones. We just want to perform automatic DST switching.
-// The following are the U.S. DST rules. If you live elsewhere, the customize these. The params
-// are a descriptive string (not used, but must be 5 chars or less), a "descriptor" for which
-// weekday in the active month is in the rule (first, second... last), the day of the week,
-// the month, and the hour of the day. The last parameter is the offset in minutes. You should
-// have the "winter" rule have a 0 offset so that turning off DST returns you to winter time.
-// The summer offset should be relative to winter time (probably +60 minutes).
-#if 1
-// US rules
-TimeChangeRule summer = { "DST", Second, Sun, Mar, 2, 60 };
-TimeChangeRule winter = { "ST", First, Sun, Nov, 2, 0 };
-#endif
-#if 0
-// European Union
-TimeChangeRule summer = { "DST", Last, Sun, Mar, 1, 60 };
-TimeChangeRule winter = { "ST", Last, Sun, Oct, 1, 0 };
-#endif
-#if 0
-// Australia - note the reversal due to the Southern hemisphere
-TimeChangeRule summer = { "DST", First, Sun, Oct, 2, 60 };
-TimeChangeRule winter = { "ST", First, Sun, Apr, 2, 0 };
-#endif
-Timezone dst(summer, winter);
+
+// Time zone rules. 
+// Use US_DST_RULES macro for US, EU_... for EU, and AU_... for Australia. Uncomment only one of
+// those as applicabble.
+US_DST_RULES(dstRules);
+// EU_DST_RULES(dstr);
+// AU_DST_RULES(dstr);
 
 // Thanks to Gareth Evans at http://todbot.com/blog/2008/06/19/how-to-do-big-strings-in-arduino/
 // Note that you must be careful not to use this macro more than once per "statement", lest you
@@ -972,9 +956,10 @@ unsigned int checkTimer()
 
   event_struct* events(persisted.events);
 
-  unsigned char ev_hour = hour(localTime());
-  unsigned char ev_minute = minute(localTime());
-  unsigned char ev_dow = dayOfWeek(localTime());
+  time_t lt = localTime();
+  unsigned char ev_hour = hour(lt);
+  unsigned char ev_minute = minute(lt);
+  unsigned char ev_dow = dayOfWeek(lt);
   unsigned char ev_dow_mask = 1 << (ev_dow - 1);
   for (unsigned int i = 0; i < EVENT_COUNT; i++)
   {
@@ -1109,17 +1094,18 @@ void doClockMenu(boolean initialize)
   {
     display.clear();
     display.print(P("Set Clock"));
+    time_t lt = localTime();
 #ifdef CLOCK_24HOUR
-    editHour = hour(localTime());
+    editHour = hour(lt);
 #else
-    editHour = hourFormat12(localTime());
-    editMeridian = isPM(localTime()) ? 1 : 0;
+    editHour = hourFormat12(lt);
+    editMeridian = isPM(lt) ? 1 : 0;
 #endif
 
-    editMinute = minute(localTime());
-    editDay = day(localTime());
-    editMonth = month(localTime());
-    editYear = year(localTime());
+    editMinute = minute(lt);
+    editDay = day(lt);
+    editMonth = month(lt);
+    editYear = year(lt);
     if (editYear < FIRST_YEAR || editYear > LAST_YEAR) editYear = FIRST_YEAR;
     editCursor = 0;
     event = EVENT_LONG_PUSH; // we did a long push to get here.
@@ -1184,7 +1170,7 @@ void doClockMenu(boolean initialize)
       // The underlying system clock is always winter time.
       // Note that setting the time during the repeated hour in
       // the fall will assume winter time - the hour will NOT repeat.
-      if (enable_dst) toSet = dst.toUTC(toSet);
+//      if (enable_dst) toSet = dst.toUTC(toSet);
       setTime(toSet);
       RTC.set(toSet);
       doMenuFunc = doMenu;
