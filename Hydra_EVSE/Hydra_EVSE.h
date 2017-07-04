@@ -32,6 +32,7 @@
 #include <Time.h>
 #include <DS1307RTC.h>
 //#include <Timezone.h>
+#include "onlineSum.h"
 #include "dst.h"
 
 // SW version
@@ -253,6 +254,13 @@
 // doe RB = 27 - Mega Hydra production
 //#define CURRENT_SCALE_FACTOR 184
 
+// Irregular-sampled EWA half-period for ammeter displays (the time after which data points a weighed 1/2
+// w.r.t. most recent data point). This is for Ammeter display only, it does not affect current measurements
+// for overdraw etc. purposes.
+#define AMM_DISPLAY_HALF_PERIOD 1500
+
+
+
 #define LOG_NONE 0
 #define LOG_INFO 1
 #define LOG_DEBUG 2
@@ -346,7 +354,7 @@ struct car_struct {
   unsigned long last_current_log;
   boolean seq_done = false;
   unsigned int pilot_state;
-//  unsigned long current_samples[ROLLING_AVERAGE_SIZE];
+  EWASumD ammSum;
 
   car_struct(unsigned int car, int themOffset, unsigned int relay_pin, 
   unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
@@ -362,9 +370,9 @@ struct car_struct {
     request_time(0),
     error_time(0),
     last_current_log(0),
-    pilot_state(LOW)
+    pilot_state(LOW),
+    ammSum(AMM_DISPLAY_HALF_PERIOD)
   {
-//    memset(current_samples, 0, sizeof(current_samples));
   };
 
   void setRelay(unsigned int state);
@@ -494,6 +502,7 @@ extern persisted_struct persisted;
 extern void Delay(unsigned int);
 extern void displayStatus(unsigned int status);
 extern char errLetter(unsigned int status);
+extern char *formatMilliamps(unsigned long milliamps);
 
 extern boolean &enable_dst;
 extern car_struct cars[];
