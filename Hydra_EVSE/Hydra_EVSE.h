@@ -21,6 +21,9 @@
 #ifndef ___HYDRA_EVSE_H___
 #define ___HYDRA_EVSE_H___
 
+// Standard Arduino types like boolean
+#include <Arduino.h> 
+
 #include <avr/wdt.h>
 #include <Wire.h>
 #include <LiquidTWI2.h>
@@ -28,13 +31,14 @@
 #include <EEPROM.h>
 #include <Time.h>
 #include <DS1307RTC.h>
-#include <Timezone.h>
+//#include <Timezone.h>
+#include "dst.h"
 
 // SW version
 #define SW_VERSION "2.4.1-dev"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
-//#define UNIT_TESTS
+// #define UNIT_TESTS
 
 #define UINT_BITS (sizeof(unsigned int) << 3)
 #define ULONG_BITS (sizeof(unsigned long) << 3)
@@ -479,7 +483,6 @@ struct persisted_struct {
   void reset();
 };
 
-
 ////////////////////////////////////////////////////////////
 // This is stuff from Hydra_EVSE.ino that unit tests use
 
@@ -491,16 +494,18 @@ extern persisted_struct persisted;
 extern void Delay(unsigned int);
 extern void displayStatus(unsigned int status);
 extern char errLetter(unsigned int status);
+
 extern boolean &enable_dst;
-extern Timezone dst;
 extern car_struct cars[];
+extern DSTRule dstRules[2];
 
 
 ///////////////////////////////////////////////////////////
 // Inline declarations
 static inline time_t localTime()
 {
-  return enable_dst ? dst.toLocal(now()) : now();
+  time_t t = now();
+  return persisted.enable_dst && isSummer(dstRules, t)? t + SECS_PER_HOUR : t;
 }
 
 
