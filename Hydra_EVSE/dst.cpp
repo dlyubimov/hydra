@@ -20,23 +20,6 @@
 
 #include "dst.h"
 
-#define sameWeekDow(_time_, _dow_)  ((_time_ / SECS_PER_DAY + _dow_ - dayOfWeek(_time_)) * SECS_PER_DAY)
-#define monthBegin(_time_) ((_time_ / SECS_PER_DAY + 1 - day(_time_)) * SECS_PER_DAY) 
-#define nextMonthBegin(_time_) monthBegin( ((_time_ / SECS_PER_DAY + 31 - day(_time_)) * SECS_PER_DAY)
-
-// This returns next day of week w.r.t. current time. if today is the same day of week 
-// as the one requested, returns today's midnight. 
-inline time_t nextDow (time_t _time_, uint8_t _dow_) {
-  time_t sameWDow = sameWeekDow( _time_, _dow_);
-  return sameWDow >= previousMidnight(_time_)? sameWDow : sameWDow + SECS_PER_WEEK;
-}
-// returns previous closest day of week to the _time_. If today is the same as _dow_, returns today's midnight.
-inline time_t previousDow (time_t _time_, uint8_t _dow_) {
-  time_t sameWDow = sameWeekDow( _time_, _dow_);
-  return sameWDow <= previousMidnight(_time_)? sameWDow : sameWDow - SECS_PER_WEEK;
-}
-
-
 boolean isSummer(DSTRule* rules , time_t t) {
 
   // The algorithm here is simple. in he current year,
@@ -44,9 +27,12 @@ boolean isSummer(DSTRule* rules , time_t t) {
   // otherwise, if we are past the first rule, we take that rule.
   // otherwise, we take second rule.
   for (int i = 1; i >= 0; i--) {
-    if ( rules[i] < t) return rules[i].dst;
+    if ( rules[i] < t) return rules[i].dst == summer;
   }
-  return rules[1].dst;
+  // if we got here, we are before the first rule, which means we have to assume 
+  // it is a continuation of the 2nd rule ( last rule in calendar order) from the
+  // previous year.
+  return rules[1].dst == summer;
 }
 
 time_t toDST(DSTRule *rules, time_t t) {
@@ -54,27 +40,27 @@ time_t toDST(DSTRule *rules, time_t t) {
 
 }
 
-// Find dow "offset" days from now. Offset can be positive for days ahead or negative for days before.
-static uint8_t dowOffset(uint8_t dow, int offset) {
-  int rDow = (dow + offset - 1 ) % 7;
-//  rDow += 7 * (rDow < 0);
-  if ( rDow < 0) rDow += 7;
-  return (uint8_t) rDow + 1;
-}
 boolean DSTRule::operator<(time_t& that) {
 
   uint8_t thatMo = month(that);
-  
+
   // try to break based on the month.
   if ( mo < thatMo) return true;
   else if ( mo > thatMo) return false;
 
   // same month -- we will have to figure the day of week of the rule.
-  if ( week != Last) {
+  time_t ruleBound;
+  if ( week != Last)
+    // our week enum starts with 0, so we will just multiply that by the 
+    // week duration, and then find the next closest day of week w.r.t. that:
+    ruleBound = nextDow (monthBegin(that) + SECS_PER_WEEK * week, dow);
+  else
+    // handle last day of week in a month: take the last day of the month 
+    // (which is the first day of the next month), and 
+    // find the previous closest day of week.
+    ruleBound = previousDow(nextMonthBegin(that) - SECS_PER_DAY, dow);
 
-   } else {
-    // handle last day of week in the month
-  }
+  return ruleBound <= that;
 
 }
 

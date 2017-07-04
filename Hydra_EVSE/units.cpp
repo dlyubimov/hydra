@@ -39,12 +39,28 @@ static char* strDate(time_t time) {
 #define assert(_cond_, _str_) if (! _cond_) { logInfo(P("%s UNIT FAIL."), _str_); return; }
 #define ok(_str_) logInfo(P("%s UNIT OK."), _str_);
 
-static void testDst() {
+static void testDstSetup() {
   tmElements_t els;
   els.Year = CalendarYrToTm(2017);
   els.Month = 7;
   els.Day = 3;
   els.Hour = 0;
+
+  assert(!strcmp(strDate(makeTime(els)), "7/3/2017"), "strDate");
+
+  // Tests for finding previous. successive day of week. 
+  // Corner case: same day must point at the day in both cases.
+  assert(!strcmp(strDate(nextDow(makeTime(els), 2)), "7/3/2017"), "nextDow"); // Next monday
+  assert(!strcmp(strDate(previousDow(makeTime(els), 2)), "7/3/2017"), "prevDow"); // previous monday
+
+  // not same day.
+  assert(!strcmp(strDate(nextDow(makeTime(els), 3)), "7/4/2017"), "nextDow(2)"); // Next Tuesday 7/4/2017
+  assert(!strcmp(strDate(previousDow(makeTime(els), 3)), "6/27/2017"), "prevDow(2)"); // previous Tuesday 6/27/2017
+
+  // Month begin.
+  assert(!strcmp(strDate(monthBegin(makeTime(els))), "7/1/2017"), "moBegin"); // this month begin 7/1/2017
+  assert(!strcmp(strDate(nextMonthBegin(makeTime(els))), "8/1/2017"), "neMoBeg"); // next month begin 8/1/2017
+
 
 }
 
@@ -147,7 +163,8 @@ static void testMenuSetup() {
 int unitsSetup() {
 
   testEepromSetup();
-//  testEWASumSetup();
+  testDstSetup();
+  //  testEWASumSetup();
   testDisplayStatus();
   testMenuSetup();
   return false;
