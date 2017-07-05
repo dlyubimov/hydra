@@ -68,7 +68,7 @@ unsigned char currentMenuChoices[] = { 12, 16, 20, 24, 28, 30, 32, 36, 40, 44, 5
 #define LAST_YEAR 2020
 
 
-// Time zone rules. 
+// Time zone rules.
 // Use US_DST_RULES macro for US, EU_... for EU, and AU_... for Australia. Uncomment only one of
 // those as applicabble.
 US_DST_RULES(dstRules);
@@ -96,6 +96,9 @@ car_struct cars[] =
 // TODO: in theory once we remove symmetry duplication in the code, we won't need this.
 car_struct &car_a(cars[0]), &car_b(cars[1]);
 timeouts_struct timeouts;
+// We cannot make it part of timeouts since errors clear all pending timeouts.
+unsigned char gfi_count;
+
 
 unsigned long last_state_log;
 unsigned char &operatingMode(persisted.operatingMode), sequential_mode_tiebreak;
@@ -429,8 +432,14 @@ void error(unsigned int status)
   // (that is, turn off the oscillator) whenever we want.
   // Stop flipping, one way or another
   unsigned int car = status & CAR_MASK;
-  timeouts.sequential_pilot_timeout = 0;
-  if (car == BOTH || car == CAR_A)
+  timeouts.clear();
+
+  // kick off gfi timer
+  if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ < GFI_CLEAR_ATTEMPTS) {
+    timeouts.gfi_time = millis();
+  }
+
+  if ( car == BOTH || car == CAR_A)
   {
     car_a.setPilot(HIGH);
     if (car_a.last_state != STATE_E)
@@ -1171,7 +1180,7 @@ void doClockMenu(boolean initialize)
       // The underlying system clock is always winter time.
       // Note that setting the time during the repeated hour in
       // the fall will assume winter time - the hour will NOT repeat.
-//      if (enable_dst) toSet = dst.toUTC(toSet);
+      //      if (enable_dst) toSet = dst.toUTC(toSet);
       setTime(toSet);
       RTC.set(toSet);
       doMenuFunc = doMenu;
@@ -1758,6 +1767,7 @@ void setup()
   car_b.setRelay(LOW);
 
   timeouts.clear();
+  gfi_count = 0;
   last_minute = 99;
 #ifdef QUICK_CYCLING_WORKAROUND
   pilot_release_holdoff_time = 0;
@@ -1842,6 +1852,11 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
           // will take us back to state A.
           last_state = DUNNO;
           logInfo(P("Car %c disconnected, clearing error"), carLetter());
+          timeouts.clear();
+
+          // clear gfi counts only if both cars are disconnected.
+          if (them.last_state == STATE_A) gfi_count = 0;
+
         }
         else
         {
@@ -1886,6 +1901,10 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
         sequential_mode_transition(car_state);
         break;
     }
+  } else if ( ! paused && timeouts.gfi_time > 0 && timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
+    timeouts.clear();
+    // enable transition next iteration
+    for (int i = 0; i < 2; i++ ) cars[i].last_state = DUNNO;
   }
 
 }
@@ -1989,18 +2008,18 @@ void car_struct::loopCheckDelayedTransition() {
   }
 }
 
-// This switches offer, sequential mode only, from a current car in mode B to the other car currently 
+// This switches offer, sequential mode only, from a current car in mode B to the other car currently
 // also in mode B, based on offer timeout.
 void car_struct::loopSeqHandover(unsigned long nowMs) {
-      {
-        logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
-        // move the pilot offer.
-        setPilot(HIGH);
-        them.setPilot(FULL);
-        timeouts.sequential_pilot_timeout = nowMs;
-        displayStatus(car | (seq_done ? STATUS_DONE : STATUS_WAIT));
-        displayStatus(them.car | STATUS_OFF );
-      }
+  {
+    logInfo(P("Sequential mode offer timeout, moving offer to %s"), car_str(CAR_B));
+    // move the pilot offer.
+    setPilot(HIGH);
+    them.setPilot(FULL);
+    timeouts.sequential_pilot_timeout = nowMs;
+    displayStatus(car | (seq_done ? STATUS_DONE : STATUS_WAIT));
+    displayStatus(them.car | STATUS_OFF );
+  }
 }
 
 ///////////////////////////////////////////////////////////
@@ -2023,6 +2042,7 @@ void loop()
   if (gfiTriggered)
   {
     logInfo(P("GFI fault detected"));
+    timeouts.clear();
     error(BOTH | STATUS_ERR | STATUS_ERR_G);
     gfiTriggered = false;
   }
@@ -2107,6 +2127,7 @@ void loop()
   {
     if (!paused)
     {
+      timeouts.clear();
       if (operatingMode == MODE_SEQUENTIAL)
       {
         // remember which car was active
@@ -2136,6 +2157,8 @@ void loop()
     {
       car_a.last_state = DUNNO;
       car_b.last_state = DUNNO;
+      // clear all pending events.
+      timeouts.clear();
     }
     paused = false;
   }
