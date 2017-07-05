@@ -22,7 +22,7 @@
 #define ___HYDRA_EVSE_H___
 
 // Standard Arduino types like boolean
-#include <Arduino.h> 
+#include <Arduino.h>
 
 #include <avr/wdt.h>
 #include <Wire.h>
@@ -341,10 +341,23 @@ extern char p_buffer[];
 #include "units.h"
 #endif
 
+struct timeouts_struct {
+  unsigned long sequential_pilot_timeout;
+  unsigned long button_press_time, button_debounce_time;
+
+  timeout_struct() {
+    clear();
+  }
+
+  void clear() {
+    memset(this, 0, sizeof(*this));
+  }
+};
+
 struct car_struct {
   // CAR_A or CAR_B
   unsigned char car;
-  car_struct& them; 
+  car_struct& them;
   unsigned int relay_pin, pilot_out_pin, pilot_sense_pin, current_pin;
   volatile unsigned int relay_state;
   unsigned int last_state;
@@ -356,9 +369,9 @@ struct car_struct {
   unsigned int pilot_state;
   EWASumD ammSum;
 
-  car_struct(unsigned int car, int themOffset, unsigned int relay_pin, 
-  unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
-    car(car), 
+  car_struct(unsigned int car, int themOffset, unsigned int relay_pin,
+             unsigned int pilot_out_pin, unsigned int pilot_sense_pin, unsigned int current_pin) :
+    car(car),
     them(*(this + themOffset)),
     relay_pin(relay_pin),
     pilot_out_pin(pilot_out_pin),
@@ -387,11 +400,15 @@ struct car_struct {
   void loopCurrentMonitor();
   void loopCheckDelayedTransition();
   void loopSeqHandover(unsigned long nowMs);
-  // Inlines 
-  char carLetter() { return 'A' + car - CAR_A; }
+  // Inlines
+  char carLetter() {
+    return 'A' + car - CAR_A;
+  }
   // Returns 0 for car A and 8 for car B. Typically, to print display status or current.
-  unsigned int dispCol() { return 8 * ( car - CAR_A ); }
-  
+  unsigned int dispCol() {
+    return 8 * ( car - CAR_A );
+  }
+
 };
 
 #define EVENT_COUNT 4
@@ -421,10 +438,10 @@ typedef struct event_struct {
 // Calibration menu items
 
 // this is in 0.1A units
-#define CALIB_AMM_MAX 5 
+#define CALIB_AMM_MAX 5
 
 // this is in -% units. Can derate pilots up to 5%.
-#define CALIB_PILOT_MAX 10 
+#define CALIB_PILOT_MAX 10
 
 typedef struct calib_struct {
   char amm_a, amm_b, pilot_a, pilot_b;
@@ -514,7 +531,7 @@ extern DSTRule dstRules[2];
 static inline time_t localTime()
 {
   time_t t = now();
-  return persisted.enable_dst && isSummer(dstRules, t)? t + SECS_PER_HOUR : t;
+  return persisted.enable_dst && isSummer(dstRules, t) ? t + SECS_PER_HOUR : t;
 }
 
 

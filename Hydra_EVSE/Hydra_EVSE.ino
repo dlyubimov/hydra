@@ -81,7 +81,9 @@ US_DST_RULES(dstRules);
 // strings that are then used in snprintf statements that themselves use this macro.
 char p_buffer[96];
 
-// "display" global variable definition
+// "display" global variable definition -- this may be a different device however it must support
+// all methods we use here. This macro is defined based on hardware configuration (different for
+// my unit tests and 2.3.1 hardware).
 DISPLAY_DEF(display);
 
 
@@ -93,11 +95,10 @@ car_struct cars[] =
 };
 // TODO: in theory once we remove symmetry duplication in the code, we won't need this.
 car_struct &car_a(cars[0]), &car_b(cars[1]);
+timeouts_struct timeouts;
 
 unsigned long last_state_log;
-unsigned long sequential_pilot_timeout;
 unsigned char &operatingMode(persisted.operatingMode), sequential_mode_tiebreak;
-unsigned long button_press_time, button_debounce_time;
 #ifdef GROUND_TEST
 unsigned char current_ground_status;
 #endif
@@ -428,7 +429,7 @@ void error(unsigned int status)
   // (that is, turn off the oscillator) whenever we want.
   // Stop flipping, one way or another
   unsigned int car = status & CAR_MASK;
-  sequential_pilot_timeout = 0;
+  timeouts.sequential_pilot_timeout = 0;
   if (car == BOTH || car == CAR_A)
   {
     car_a.setPilot(HIGH);
@@ -713,7 +714,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
       setRelay(LOW);
       setPilot(HIGH);
       // We're not both in state B anymore.
-      sequential_pilot_timeout = 0;
+      timeouts.sequential_pilot_timeout = 0;
       // We don't exist. If they're waiting, they can have it.
       if (their_state == STATE_B)
       {
@@ -759,7 +760,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           //          display.print(P(": done ")); // differentiated from "wait" because a C/D->B transition has occurred.
           // Disable future charges for this car until re-unpaused or re-plugged.
           seq_done = true;
-          sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
+          timeouts.sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
         }
         else
         {
@@ -769,7 +770,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           //          display.print((us == CAR_A) ? "A" : "B");
           //          display.print(P(": off  "));
           // their state is not B, so we're not "flipping"
-          sequential_pilot_timeout = 0;
+          timeouts.sequential_pilot_timeout = 0;
         }
       }
       else
@@ -780,7 +781,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           setPilot(FULL);
           seq_done = false;
           them.seq_done = false;
-          sequential_pilot_timeout = 0;
+          timeouts.sequential_pilot_timeout = 0;
 
           displayStatus(car | STATUS_OFF );
           //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
@@ -803,7 +804,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           if (!seq_done && (sequential_mode_tiebreak == car ))
           {
             setPilot(FULL);
-            sequential_pilot_timeout = millis();
+            timeouts.sequential_pilot_timeout = millis();
 
             displayStatus (car | STATUS_OFF);
             //            display.setCursor((us == CAR_A) ? 0 : 8, 1);
@@ -835,7 +836,7 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
         return;
       }
       // We're not both in state B anymore
-      sequential_pilot_timeout = 0;
+      timeouts.sequential_pilot_timeout = 0;
       displayStatus(car | STATUS_ON );
       //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
       //      display.print((us == CAR_A) ? "A" : "B");
@@ -976,7 +977,7 @@ unsigned int checkTimer()
 unsigned int checkEvent()
 {
   logTrace(P("Checking for button event"));
-  if (button_debounce_time != 0 && millis() - button_debounce_time < BUTTON_DEBOUNCE_INTERVAL)
+  if (timeouts.button_debounce_time != 0 && millis() - timeouts.button_debounce_time < BUTTON_DEBOUNCE_INTERVAL)
   {
     // debounce is in progress
     return EVENT_NONE;
@@ -984,7 +985,7 @@ unsigned int checkEvent()
   else
   {
     // debounce is over
-    button_debounce_time = 0;
+    timeouts.button_debounce_time = 0;
   }
   unsigned int buttons = display.readButtons();
   logTrace(P("Buttons %d"), buttons);
@@ -992,9 +993,9 @@ unsigned int checkEvent()
   {
     logTrace(P("Button is down"));
     // Button is down
-    if (button_press_time == 0)   // this is the start of a press.
+    if (timeouts.button_press_time == 0)   // this is the start of a press.
     {
-      button_debounce_time = button_press_time = millis();
+      timeouts.button_debounce_time = timeouts.button_press_time = millis();
     }
     return EVENT_NONE; // We don't know what this button-push is going to be yet
   }
@@ -1002,11 +1003,11 @@ unsigned int checkEvent()
   {
     logTrace(P("Button is up"));
     // Button released
-    if (button_press_time == 0) return EVENT_NONE; // It wasn't down anyway.
+    if (timeouts.button_press_time == 0) return EVENT_NONE; // It wasn't down anyway.
     // We are now ending a button-push. First, start debuncing.
-    button_debounce_time = millis();
-    unsigned long button_pushed_time = button_debounce_time - button_press_time;
-    button_press_time = 0;
+    timeouts.button_debounce_time = millis();
+    unsigned long button_pushed_time = timeouts.button_debounce_time - timeouts.button_press_time;
+    timeouts.button_press_time = 0;
     if (button_pushed_time > BUTTON_LONG_START)
     {
       logDebug(P("Button long-push event"));
@@ -1756,9 +1757,10 @@ void setup()
   car_a.setRelay(LOW);
   car_b.setRelay(LOW);
 
-  button_debounce_time = 0;
-  button_press_time = 0;
-  sequential_pilot_timeout = 0;
+  timeouts.clear();
+//  button_debounce_time = 0;
+//  button_press_time = 0;
+//  sequential_pilot_timeout = 0;
   last_minute = 99;
   relay_change_time = 0;
 #ifdef QUICK_CYCLING_WORKAROUND
@@ -1999,7 +2001,7 @@ void car_struct::loopSeqHandover(unsigned long nowMs) {
         // move the pilot offer.
         setPilot(HIGH);
         them.setPilot(FULL);
-        sequential_pilot_timeout = nowMs;
+        timeouts.sequential_pilot_timeout = nowMs;
         displayStatus(car | (seq_done ? STATUS_DONE : STATUS_WAIT));
         displayStatus(them.car | STATUS_OFF );
       }
@@ -2190,10 +2192,10 @@ void loop()
   car_b.loopCheckPilot(car_b_state);
 
 
-  if (sequential_pilot_timeout != 0)
+  if (timeouts.sequential_pilot_timeout != 0)
   {
     unsigned long nowMs = millis();
-    if (nowMs - sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT)
+    if (nowMs - timeouts.sequential_pilot_timeout > SEQ_MODE_OFFER_TIMEOUT)
     {
       if (car_a.pilot_state == FULL)
         car_a.loopSeqHandover(nowMs);
