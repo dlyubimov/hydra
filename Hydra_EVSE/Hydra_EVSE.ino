@@ -107,7 +107,7 @@ unsigned long pilot_release_holdoff_time;
 #endif
 // These volatile ones are touched by the GFI interrupt handler
 //volatile unsigned int relay_state_a, relay_state_b;
-volatile unsigned long relay_change_time;
+//volatile unsigned long relay_change_time;
 volatile boolean gfiTriggered = false;
 boolean paused = false;
 boolean enterPause = false;
@@ -462,7 +462,7 @@ void gfi_trigger()
   digitalWrite(CAR_B_RELAY, LOW);
   // Now make the data consistent. Make sure that anything you touch here is declared "volatile"
   car_a.relay_state = car_b.relay_state = LOW;
-  relay_change_time = millis();
+  timeouts.relay_change_time = millis();
   // We don't have time in an IRQ to do more than that.
   gfiTriggered = true;
 }
@@ -491,7 +491,7 @@ void car_struct::setRelay(unsigned int state)
   //      break;
   //  }
   // This only counts if we actually changed anything.
-  relay_change_time = millis();
+  timeouts.relay_change_time = millis();
 }
 
 // If it's in an error state, it's not charging (the relay may still be on during error delay).
@@ -1758,11 +1758,7 @@ void setup()
   car_b.setRelay(LOW);
 
   timeouts.clear();
-//  button_debounce_time = 0;
-//  button_press_time = 0;
-//  sequential_pilot_timeout = 0;
   last_minute = 99;
-  relay_change_time = 0;
 #ifdef QUICK_CYCLING_WORKAROUND
   pilot_release_holdoff_time = 0;
 #endif
@@ -2053,7 +2049,7 @@ void loop()
 #endif
 
 #ifdef RELAY_TEST
-  if (relay_change_time == 0)
+  if (timeouts.relay_change_time == 0)
   {
     // If the power's off but there's still a voltage, that's a stuck relay
     if ((digitalRead(CAR_A_RELAY_TEST) == HIGH) && (car_a.relay_state == LOW))
@@ -2084,8 +2080,9 @@ void loop()
 
   unsigned long incomingPilotMilliamps = 1000ul * persisted.max_amps;
 
-  if (relay_change_time != 0 && millis() > relay_change_time + RELAY_TEST_GRACE_TIME)
-    relay_change_time = 0;
+  // in this hardware version (2.3.1) we don't even have to do that, right? We don't induce the relay tests anymore.
+  if (timeouts.relay_change_time != 0 && millis() > timeouts.relay_change_time + RELAY_TEST_GRACE_TIME)
+    timeouts.relay_change_time = 0;
 
   // Update the display
   if (car_a.last_state == STATE_E || car_b.last_state == STATE_E)

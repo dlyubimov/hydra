@@ -344,6 +344,7 @@ extern char p_buffer[];
 struct timeouts_struct {
   unsigned long sequential_pilot_timeout;
   unsigned long button_press_time, button_debounce_time;
+  volatile unsigned long relay_change_time;
 
   timeout_struct() {
     clear();
@@ -351,6 +352,8 @@ struct timeouts_struct {
 
   void clear() {
     memset(this, 0, sizeof(*this));
+    // clearing volatile again to make sure proper value write
+    relay_change_time = 0;
   }
 };
 
