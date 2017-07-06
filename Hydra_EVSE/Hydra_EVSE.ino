@@ -208,7 +208,7 @@ void logImpl(unsigned int level, const char * fmt_str, ...)
       break;
     case LOG_TRACE:
       Serial.print(millis());
-      Serial.print(P(" TRACE: "));
+      Serial.print(P("TRACE: "));
       break;
     default:
       Serial.print(P("UNKNOWN: "));

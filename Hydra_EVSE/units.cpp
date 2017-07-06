@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////
 
 #include "Hydra_EVSE.h"
-
+#include "Adafruit_BMP085.h" // https://github.com/adafruit/Adafruit-BMP085-Library
 
 
 static char* strDate(time_t time) {
@@ -181,6 +181,16 @@ static void testEWASumSetup() {
 }
 
 
+static void testTempThrottleSetup() {
+  Adafruit_BMP085 bmp;
+  bmp.begin();
+  
+  for (int i = 0; i < 25; i++ ) {
+    Serial.println(bmp.readTemperature()*1.8 + 32);
+    Delay(400);
+  }
+  ok("bmp-180");
+}
 
 
 int unitsSetup() {
@@ -188,6 +198,7 @@ int unitsSetup() {
   testEepromSetup();
   testDstSetup();
   testEWASumSetup();
+  testTempThrottleSetup();
   testDisplayStatus();
   testMenuSetup();
   return false;
