@@ -96,6 +96,10 @@ car_struct cars[] =
 // TODO: in theory once we remove symmetry duplication in the code, we won't need this.
 car_struct &car_a(cars[0]), &car_b(cars[1]);
 timeouts_struct timeouts;
+
+// This is special -- we cannot frivolously clear it with the other timeouts, or we may see spurious err R.
+volatile unsigned long relay_change_time;
+
 // We cannot make it part of timeouts since errors clear all pending timeouts.
 unsigned char gfi_count;
 
@@ -432,7 +436,7 @@ void error(unsigned int status)
   // (that is, turn off the oscillator) whenever we want.
   // Stop flipping, one way or another
   unsigned int car = status & CAR_MASK;
-  timeouts.clear();
+  timeouts.sequential_pilot_timeout = 0;
 
   // kick off gfi timer
   if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ < GFI_CLEAR_ATTEMPTS) {
@@ -471,7 +475,7 @@ void gfi_trigger()
   digitalWrite(CAR_B_RELAY, LOW);
   // Now make the data consistent. Make sure that anything you touch here is declared "volatile"
   car_a.relay_state = car_b.relay_state = LOW;
-  timeouts.relay_change_time = millis();
+  relay_change_time = millis();
   // We don't have time in an IRQ to do more than that.
   gfiTriggered = true;
 }
@@ -500,7 +504,7 @@ void car_struct::setRelay(unsigned int state)
   //      break;
   //  }
   // This only counts if we actually changed anything.
-  timeouts.relay_change_time = millis();
+  relay_change_time = millis();
 }
 
 // If it's in an error state, it's not charging (the relay may still be on during error delay).
@@ -1767,6 +1771,7 @@ void setup()
   car_b.setRelay(LOW);
 
   timeouts.clear();
+  relay_change_time = 0;
   gfi_count = 0;
   last_minute = 99;
 #ifdef QUICK_CYCLING_WORKAROUND
@@ -1852,7 +1857,7 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
           // will take us back to state A.
           last_state = DUNNO;
           logInfo(P("Car %c disconnected, clearing error"), carLetter());
-          timeouts.clear();
+          //          timeouts.clear();
 
           // clear gfi counts only if both cars are disconnected.
           if (them.last_state == STATE_A) gfi_count = 0;
@@ -1902,7 +1907,7 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
         break;
     }
   } else if ( ! paused && timeouts.gfi_time > 0 && timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
-    timeouts.clear();
+    //    timeouts.clear();
     // enable transition next iteration
     for (int i = 0; i < 2; i++ ) cars[i].last_state = DUNNO;
   }
@@ -2042,7 +2047,7 @@ void loop()
   if (gfiTriggered)
   {
     logInfo(P("GFI fault detected"));
-    timeouts.clear();
+    //    timeouts.clear();
     error(BOTH | STATUS_ERR | STATUS_ERR_G);
     gfiTriggered = false;
   }
@@ -2069,7 +2074,7 @@ void loop()
 #endif
 
 #ifdef RELAY_TEST
-  if (timeouts.relay_change_time == 0)
+  if (relay_change_time == 0)
   {
     // If the power's off but there's still a voltage, that's a stuck relay
     if ((digitalRead(CAR_A_RELAY_TEST) == HIGH) && (car_a.relay_state == LOW))
@@ -2101,8 +2106,8 @@ void loop()
   unsigned long incomingPilotMilliamps = 1000ul * persisted.max_amps;
 
   // in this hardware version (2.3.1) we don't even have to do that, right? We don't induce the relay tests anymore.
-  if (timeouts.relay_change_time != 0 && millis() > timeouts.relay_change_time + RELAY_TEST_GRACE_TIME)
-    timeouts.relay_change_time = 0;
+  if (relay_change_time != 0 && millis() > relay_change_time + RELAY_TEST_GRACE_TIME)
+    relay_change_time = 0;
 
   // Update the display
   if (car_a.last_state == STATE_E || car_b.last_state == STATE_E)

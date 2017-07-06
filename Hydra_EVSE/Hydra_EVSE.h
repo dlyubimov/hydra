@@ -157,7 +157,7 @@
 // delay per event. (UL 2231) 
 #define GFI_CLEAR_MS (15 * 60)
 // debug
-//#define GFI_CLEAR_MS (3 * 60)
+//#define GFI_CLEAR_MS (1 * 60)
 #define GFI_CLEAR_ATTEMPTS 4
 
 
@@ -354,7 +354,6 @@ extern char p_buffer[];
 struct timeouts_struct {
   unsigned long sequential_pilot_timeout;
   unsigned long button_press_time, button_debounce_time;
-  volatile unsigned long relay_change_time;
   // last gfi time
   unsigned long gfi_time;
 
@@ -364,8 +363,6 @@ struct timeouts_struct {
 
   void clear() {
     memset(this, 0, sizeof(*this));
-    // clearing volatile again to make sure proper value write
-    relay_change_time = 0;
   }
 };
 
