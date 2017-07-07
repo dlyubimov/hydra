@@ -75,7 +75,7 @@
 
 // Current production or unit test hardware (currently, version 2.3.1 in my posession).
 #ifndef UNIT_TESTS
-#include "hw_2_3_1.h"
+#include "hw_4_3_1.h"
 #else
 #include "units.h"
 #endif
