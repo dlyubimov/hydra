@@ -436,9 +436,12 @@ void error(unsigned int status)
   // (that is, turn off the oscillator) whenever we want.
   // Stop flipping, one way or another
   unsigned int car = status & CAR_MASK;
-  timeouts.sequential_pilot_timeout = 0;
 
-  // kick off gfi timer
+  // Cancel all pending events except for the relay test protection
+//  timeouts.sequential_pilot_timeout = 0;
+  timeouts.clear();
+
+  // kick off gfi retry timer (if under the allowed number of attempts).
   if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ < GFI_CLEAR_ATTEMPTS) {
     timeouts.gfi_time = millis();
   }
@@ -491,18 +494,6 @@ void car_struct::setRelay(unsigned int state)
   if (relay_state == state ) return;
   digitalWrite(relay_pin, state);
   relay_state = state;
-  //  switch (us) {
-  //    case CAR_A:
-  //      if (relay_state_a == state) return; // did nothing.
-  //      digitalWrite(CAR_A_RELAY, state);
-  //      relay_state_a = state;
-  //      break;
-  //    case CAR_B:
-  //      if (relay_state_b == state) return; // did nothing.
-  //      digitalWrite(CAR_B_RELAY, state);
-  //      relay_state_b = state;
-  //      break;
-  //  }
   // This only counts if we actually changed anything.
   relay_change_time = millis();
 }
@@ -513,20 +504,6 @@ void car_struct::setRelay(unsigned int state)
 /*static inline*/ boolean car_struct::isCarCharging()
 {
   if (paused) return false;
-  //  switch (car) {
-  //    case CAR_A:
-  //      if (last_car_a_state == STATE_E) return LOW;
-  //      if (car_a_request_time != 0) return HIGH;
-  //      return relay_state_a;
-  //      break;
-  //    case CAR_B:
-  //      if (last_car_b_state == STATE_E) return LOW;
-  //      if (car_b_request_time != 0) return HIGH;
-  //      return relay_state_b;
-  //      break;
-  //    default:
-  //      return LOW; // This should not be possible
-  //  }
   if (last_state == STATE_E) return LOW;
   if (request_time != 0) return HIGH;
   return relay_state;
@@ -543,19 +520,6 @@ void car_struct::setPilot(unsigned int which)
   // set the outgoing pilot for the given car to either HALF state, FULL state, or HIGH.
   //  int pin;
   char pilot_derate = car == CAR_A ? persisted.calib.pilot_a : persisted.calib.pilot_b;
-  //  switch (car) {
-  //    case CAR_A:
-  //      pin = CAR_A_PILOT_OUT_PIN;
-  //      pilot_state_a = which;
-  //      pilot_derate = persisted.calib.pilot_a;
-  //      break;
-  //    case CAR_B:
-  //      pin = CAR_B_PILOT_OUT_PIN;
-  //      pilot_state_b = which;
-  //      pilot_derate = persisted.calib.pilot_b;
-  //      break;
-  //    default: return;
-  //  }
   if (which == LOW || which == HIGH)
   {
     // This is what the pwm library does anyway.
@@ -581,11 +545,6 @@ void car_struct::setPilot(unsigned int which)
   }
   pilot_state = which;
 }
-
-//static inline unsigned int pilotState(unsigned int car)
-//{
-//  return (car == CAR_A) ? car_a.pilot_state : car_b.pilot_state;
-//}
 
 int car_struct::checkState()
 {
@@ -2132,7 +2091,9 @@ void loop()
   {
     if (!paused)
     {
+      // cancel all events except for relay check guarding period
       timeouts.clear();
+      
       if (operatingMode == MODE_SEQUENTIAL)
       {
         // remember which car was active

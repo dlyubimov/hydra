@@ -424,6 +424,7 @@ struct car_struct {
 };
 
 #define EVENT_COUNT 4
+
 typedef struct event_struct {
   unsigned char hour;
   unsigned char minute;
