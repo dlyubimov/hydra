@@ -2124,8 +2124,8 @@ void loop()
     }
   }
 
-  // GFI retry
-  if (timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
+  // GFI retry if set
+  if (timeouts.gfi_time > 0 && timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
     timeouts.clear();
     for (int i = 0; i < 2; i++) if (cars[i].last_state == STATE_E) cars[i].last_state = DUNNO;
   }
