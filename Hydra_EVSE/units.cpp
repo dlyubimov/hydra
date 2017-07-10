@@ -180,6 +180,37 @@ static void testEWASumSetup() {
   ok("ewa-sum");
 }
 
+static void testRTCModelSetup() {
+  double calRate = .175;
+  int offPerDay = 4;
+  int adjustError = 3 * 60;
+  char calib = 0;
+
+  time_t t = now();
+  RTCModel calibrator (0.5);
+  calib = calibrator.update(t, t);
+
+  for (int i = 0; i < 10; i++) {
+     double dailyOff = offPerDay + calib*calRate;
+     double skipDays = abs(adjustError /dailyOff);
+     if (isinf(skipDays)) {
+       logInfo(P("Inf done"));
+       break;
+     }
+     double adjErr = skipDays * dailyOff + random(60) - 30;
+     Serial.print((int)calib);
+     Serial.print('/');
+     Serial.print(skipDays);
+     Serial.print('/');
+     Serial.println(calibrator.getRate());
+
+     t+= skipDays * SECS_PER_DAY;
+     calib = calibrator.update(t,-adjErr);
+  }
+  ok("RTCModel");
+  
+}
+
 
 
 
@@ -187,7 +218,8 @@ int unitsSetup() {
 
   testEepromSetup();
   testDstSetup();
-  testEWASumSetup();
+//  testEWASumSetup();
+  testRTCModelSetup();
   testDisplayStatus();
   testMenuSetup();
   return false;

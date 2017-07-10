@@ -121,6 +121,9 @@ class RTCModel {
 
     void reset();
 
+    // For testing only
+    double getRate() { return rate; }
+
 
 
 };
