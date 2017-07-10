@@ -1144,7 +1144,7 @@ void doClockMenu(boolean initialize)
       // The underlying system clock is always winter time.
       // Note that setting the time during the repeated hour in
       // the fall will assume winter time - the hour will NOT repeat.
-      if (enable_dst) toSet -= SECS_PER_HOUR;
+      if (enable_dst && isSummer(dstRules, toSet)) toSet -= SECS_PER_HOUR;
       time_t oldTime = now();
       setTime(toSet);
       RTC.set(toSet);
