@@ -1172,7 +1172,7 @@ void doClockMenu(boolean initialize)
       // Note that setting the time during the repeated hour in
       // the fall will assume winter time - the hour will NOT repeat.
 
-      time_t oldTime = now;
+      time_t oldTime = now();
       setTime(toSet);
       RTC.set(toSet);
       RTC.setCalibration(persisted.rtc.update(toSet, toSet-oldTime));
