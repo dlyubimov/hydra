@@ -1171,9 +1171,13 @@ void doClockMenu(boolean initialize)
       // The underlying system clock is always winter time.
       // Note that setting the time during the repeated hour in
       // the fall will assume winter time - the hour will NOT repeat.
-//      if (enable_dst) toSet = dst.toUTC(toSet);
+
+      time_t oldTime = now;
       setTime(toSet);
       RTC.set(toSet);
+      RTC.setCalibration(persisted.rtc.update(toSet, toSet-oldTime));
+      persisted.eepromWrite();
+      
       doMenuFunc = doMenu;
       inMenu = false; // exit all menus
       display.clear();

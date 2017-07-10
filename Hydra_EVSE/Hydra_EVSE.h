@@ -479,6 +479,10 @@ typedef struct calib_struct {
 // eprom persistence format signature (usually minimally compatible SW_VERSION):
 // 2.4.1
 #define PERSIST_SIG 241
+
+// debug to reset eprom
+//#define PERSIST_SIG -1
+
 #define EEPROM_OFFSET 0
 
 struct persisted_struct {
@@ -491,7 +495,9 @@ struct persisted_struct {
   event_struct events[EVENT_COUNT];
   calib_struct calib;
 
-  persisted_struct() {
+  RTCModel rtc;
+
+  persisted_struct() : rtc(0.5) {
     eepromRead();
     validate();
   }
