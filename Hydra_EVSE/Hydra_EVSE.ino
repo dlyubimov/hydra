@@ -439,7 +439,7 @@ void error(unsigned int status)
   unsigned int car = status & CAR_MASK;
 
   // Cancel all pending events except for the relay test protection
-//  timeouts.sequential_pilot_timeout = 0;
+  //  timeouts.sequential_pilot_timeout = 0;
   timeouts.clear();
 
   // kick off gfi retry timer (if under the allowed number of attempts).
@@ -693,14 +693,8 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
       {
         them.setPilot(FULL);
         displayStatus( them.car | STATUS_OFF );
-        //        display.setCursor((them == CAR_A) ? 0 : 8, 1);
-        //        display.print((them == CAR_A) ? "A" : "B");
-        //        display.print(P(": off  "));
       }
       displayStatus( car | STATUS_UNPLUGGED );
-      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-      //      display.print((us == CAR_A) ? "A" : "B");
-      //      display.print(P(": ---  "));
       // reset done state for all
       seq_done = false;
       them.seq_done = false;
@@ -721,16 +715,10 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
             them.setPilot(FULL);
           }
           displayStatus(them.car | ( them.seq_done ? STATUS_DONE : STATUS_OFF ));
-          //          display.setCursor((them == CAR_A) ? 0 : 8, 1);
-          //          display.print((them == CAR_A) ? "A" : "B");
-          //          if (them_done) display.print(P(": done ")); else display.print(P(": off  "));
-
 
           // differentiated from "wait" because a C/D->B transition has occurred.
           displayStatus(car | STATUS_DONE);
-          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //          display.print((us == CAR_A) ? "A" : "B");
-          //          display.print(P(": done ")); // differentiated from "wait" because a C/D->B transition has occurred.
+
           // Disable future charges for this car until re-unpaused or re-plugged.
           seq_done = true;
           timeouts.sequential_pilot_timeout = millis(); // We're both now in B. Start flipping.
@@ -739,9 +727,6 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
         {
 
           displayStatus(car | STATUS_OFF);
-          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //          display.print((us == CAR_A) ? "A" : "B");
-          //          display.print(P(": off  "));
           // their state is not B, so we're not "flipping"
           timeouts.sequential_pilot_timeout = 0;
         }
@@ -757,10 +742,6 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           timeouts.sequential_pilot_timeout = 0;
 
           displayStatus(car | STATUS_OFF );
-          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //          display.print((us == CAR_A) ? "A" : "B");
-          //          display.print(P(": off  "));
-
           break;
         }
         else if (their_state == STATE_B || their_state == DUNNO)
@@ -780,20 +761,11 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
             timeouts.sequential_pilot_timeout = millis();
 
             displayStatus (car | STATUS_OFF);
-            //            display.setCursor((us == CAR_A) ? 0 : 8, 1);
-            //            display.print((us == CAR_A) ? "A" : "B");
-            //            display.print(P(": off  "));
             break;
           }
         }
         // Either they are in state C/D or they're in state B and we lost the tiebreak.
         displayStatus(car | ( seq_done ? STATUS_DONE : STATUS_WAIT));
-        //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //        display.print((us == CAR_A) ? "A" : "B");
-        //        if ( us_done)
-        //          display.print(P(": done "));
-        //        else
-        //          display.print(P(": wait "));
       }
       break;
     case STATE_C:
@@ -811,9 +783,6 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
       // We're not both in state B anymore
       timeouts.sequential_pilot_timeout = 0;
       displayStatus(car | STATUS_ON );
-      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-      //      display.print((us == CAR_A) ? "A" : "B");
-      //      display.print(P(": ON   "));
       setRelay(HIGH); // turn on the juice
       break;
     case STATE_E:
@@ -841,9 +810,6 @@ void car_struct::shared_mode_transition(unsigned int car_state)
       //      setPilot(us, car_state == STATE_A ? HIGH : (isCarCharging(them) ? HALF : FULL));
       setPilot(car_state == STATE_A ? HIGH : (them.isCarCharging() ? HALF : FULL));
       displayStatus(car | (car_state == STATE_A ? STATUS_UNPLUGGED : STATUS_OFF));
-      //      display.setCursor((us == CAR_A) ? 0 : 8, 1);
-      //      display.print((us == CAR_A) ? "A" : "B");
-      //      display.print(car_state == STATE_A ? ": ---  " : ": off  ");
       request_time = 0;
 #ifdef QUICK_CYCLING_WORKAROUND
       if (!isCarCharging(them))
@@ -884,9 +850,6 @@ void car_struct::shared_mode_transition(unsigned int car_state)
           them.setPilot(HALF); // *should* be redundant
           setPilot(HALF); // redundant, unless we went straight from A to C.
           displayStatus(us | STATUS_ON);
-          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //          display.print((us == CAR_A) ? "A" : "B");
-          //          display.print(P(": ON   "));
           setRelay(HIGH);
         }
         else
@@ -898,9 +861,6 @@ void car_struct::shared_mode_transition(unsigned int car_state)
           them.setPilot(HALF);
           setPilot(HALF); // this is redundant unless we are transitioning from A to C suddenly.
           displayStatus(car | STATUS_WAIT);
-          //          display.setCursor((us == CAR_A) ? 0 : 8, 1);
-          //          display.print((us == CAR_A) ? "A" : "B");
-          //          display.print(P(": wait "));
 #ifdef QUICK_CYCLING_WORKAROUND
         }
 #endif
@@ -913,9 +873,6 @@ void car_struct::shared_mode_transition(unsigned int car_state)
         setPilot(FULL); // this is redundant unless we are going directly from A to C.
         request_time = 0;
         displayStatus(car | STATUS_ON);
-        //        display.setCursor((us == CAR_A) ? 0 : 8, 1);
-        //        display.print((us == CAR_A) ? "A" : "B");
-        //        display.print(P(": ON   "));
         setRelay(HIGH);
       }
       break;
@@ -1870,10 +1827,6 @@ void car_struct::loopCheckPilot(unsigned int car_state) {
         sequential_mode_transition(car_state);
         break;
     }
-  } else if ( ! paused && timeouts.gfi_time > 0 && timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
-    //    timeouts.clear();
-    // enable transition next iteration
-    for (int i = 0; i < 2; i++ ) cars[i].last_state = DUNNO;
   }
 
 }
@@ -2011,7 +1964,6 @@ void loop()
   if (gfiTriggered)
   {
     logInfo(P("GFI fault detected"));
-    //    timeouts.clear();
     error(BOTH | STATUS_ERR | STATUS_ERR_G);
     gfiTriggered = false;
   }
@@ -2098,7 +2050,7 @@ void loop()
     {
       // cancel all events except for relay check guarding period
       timeouts.clear();
-      
+
       if (operatingMode == MODE_SEQUENTIAL)
       {
         // remember which car was active
@@ -2170,6 +2122,12 @@ void loop()
         display.print(P("UNK"));
         break;
     }
+  }
+
+  // GFI retry
+  if (timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
+    timeouts.clear();
+    for (int i = 0; i < 2; i++) if (cars[i].last_state == STATE_E) cars[i].last_state = DUNNO;
   }
 
   // Is it essential that we keep differentiating between the new state and the last state?
