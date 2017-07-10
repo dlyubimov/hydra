@@ -30,6 +30,9 @@
 // My mods for the updates-in-the past (ensures no NaNs created regardless of updates order):
 // http://weatheringthrutechdays.blogspot.com/2011/04/follow-up-for-mean-summarizer-post.html
 
+// -log(0.5)
+#define MINUS_LOG_05 0.6931471805599453
+
 // T is double or float
 template <class T>
 class EWASum {
@@ -47,7 +50,7 @@ class EWASum {
     // and in general with this summarizer most recent observations are being discounted at fastest
     // weight but never actually discounted completely (indefinite history), down to the precision of
     // the arithmetics. At full period the weights are thus still coming in at exp(-2) = 0.135 (13.5%).
-    EWASum(T tHalfWeightPeriod) : alpha(-tHalfWeightPeriod / log((T)0.5)) {
+    EWASum(T tHalfWeightPeriod) : alpha(tHalfWeightPeriod / (T) MINUS_LOG_05) {
       reset();
     };
 

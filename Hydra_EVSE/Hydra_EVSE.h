@@ -94,6 +94,7 @@
 
 #endif
 
+
 #ifdef QUICK_CYCLING_WORKAROUND
 
 // How many minutes do we wait after one car finishes before raising the other pilot?
@@ -130,6 +131,7 @@
 #define STATUS_ERR_MASK         ( -1u >> UINT_BITS - 3 << 6)
 #define STATUS_ERR_F            ( 0x0u << 6 )
 #define STATUS_ERR_O            ( 0x1u << 6 )
+// gfi
 #define STATUS_ERR_G            ( 0x2u << 6 )
 #define STATUS_ERR_T            ( 0x3u << 6 )
 #define STATUS_ERR_R            ( 0x4u << 6 )
@@ -150,6 +152,14 @@
 #define GFI_PULSE_DURATION_MS 8000 // of roughly 60 Hz. - 8 ms as a half-cycle
 #define GFI_TEST_CLEAR_TIME 100 // Takes the GFCI this long to clear
 #define GFI_TEST_DEBOUNCE_TIME 400 // Delay extra time after GFCI clears to make sure it stays.
+
+//After each GFCI event we will retry charging up to 4 times after a 15 minute
+// delay per event. (UL 2231) 
+#define GFI_CLEAR_MS (15 * 60)
+// debug
+//#define GFI_CLEAR_MS (1 * 60)
+#define GFI_CLEAR_ATTEMPTS 4
+
 
 // These are the expected analogRead() ranges for pilot read-back from the cars.
 // These are calculated from the expected voltages seen through the dividor network,
@@ -344,7 +354,8 @@ extern char p_buffer[];
 struct timeouts_struct {
   unsigned long sequential_pilot_timeout;
   unsigned long button_press_time, button_debounce_time;
-  volatile unsigned long relay_change_time;
+  // last gfi time
+  unsigned long gfi_time;
 
   timeout_struct() {
     clear();
@@ -352,8 +363,6 @@ struct timeouts_struct {
 
   void clear() {
     memset(this, 0, sizeof(*this));
-    // clearing volatile again to make sure proper value write
-    relay_change_time = 0;
   }
 };
 
@@ -415,6 +424,7 @@ struct car_struct {
 };
 
 #define EVENT_COUNT 4
+
 typedef struct event_struct {
   unsigned char hour;
   unsigned char minute;
