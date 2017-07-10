@@ -171,7 +171,7 @@ void persisted_struct::reset()
 
   // By default, use the time zone for schedule.
   enable_dst = true;
-  rtc_cal = 0;
+//  rtc_cal = 0;
   for (int i = 0; i < EVENT_COUNT; i++) events[i].reset();
 
   // Set up events hours according to PGE EV-A TOU schedule:
@@ -189,6 +189,7 @@ void persisted_struct::reset()
   events[3].dow_mask = -1u; events[3].hour = 15;
 
   calib.reset();
+  rtc.reset();
 }
 
 // persisted_struct implementation
@@ -1744,7 +1745,7 @@ void setup()
   sequential_mode_tiebreak = DEFAULT_TIEBREAK;
 
   setSyncProvider(RTC.get);
-  RTC.setCalibration(persisted.rtc_cal);
+  RTC.setCalibration(persisted.rtc.getCalib());
 
   boolean success = SetPinFrequencySafe(CAR_A_PILOT_OUT_PIN, 1000);
   if (!success)

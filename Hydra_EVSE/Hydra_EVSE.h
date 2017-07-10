@@ -157,7 +157,8 @@
 // delay per event. (UL 2231) 
 #define GFI_CLEAR_MS (15 * 60)
 // debug
-//#define GFI_CLEAR_MS (1 * 60)
+//#define GFI_CLEAR_MS (2 * 60)
+
 #define GFI_CLEAR_ATTEMPTS 4
 
 
@@ -488,7 +489,7 @@ typedef struct calib_struct {
 
 // eprom persistence format signature (usually minimally compatible SW_VERSION):
 // 2.4.1
-#define PERSIST_SIG 241
+#define PERSIST_SIG 2411
 
 // debug to reset eprom
 //#define PERSIST_SIG -1
@@ -501,7 +502,6 @@ struct persisted_struct {
   unsigned char operatingMode;
   unsigned int max_amps;
   boolean enable_dst;
-  char rtc_cal;
   event_struct events[EVENT_COUNT];
   calib_struct calib;
 
