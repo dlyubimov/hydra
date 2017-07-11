@@ -155,9 +155,9 @@
 
 //After each GFCI event we will retry charging up to 4 times after a 15 minute
 // delay per event. (UL 2231) 
-#define GFI_CLEAR_MS (15 * 60)
+#define GFI_CLEAR_MS (15 * 60 * 1000)
 // debug
-//#define GFI_CLEAR_MS (2 * 60)
+//#define GFI_CLEAR_MS (2 * 60 * 1000)
 
 #define GFI_CLEAR_ATTEMPTS 4
 
