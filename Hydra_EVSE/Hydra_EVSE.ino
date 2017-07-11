@@ -171,7 +171,7 @@ void persisted_struct::reset()
 
   // By default, use the time zone for schedule.
   enable_dst = true;
-//  rtc_cal = 0;
+  //  rtc_cal = 0;
   for (int i = 0; i < EVENT_COUNT; i++) events[i].reset();
 
   // Set up events hours according to PGE EV-A TOU schedule:
@@ -443,8 +443,8 @@ void error(unsigned int status)
   timeouts.clear();
 
   // kick off gfi retry timer (if under the allowed number of attempts).
-  if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
-    timeouts.gfi_time = millis();
+  if ( (status & STATUS_ERR_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
+    timeouts.gfi_time = now;
   }
 
   if ( car == BOTH || car == CAR_A)
@@ -1105,9 +1105,9 @@ void doClockMenu(boolean initialize)
       time_t oldTime = now();
       setTime(toSet);
       RTC.set(toSet);
-      RTC.setCalibration(persisted.rtc.update(toSet, toSet-oldTime));
+      RTC.setCalibration(persisted.rtc.update(toSet, toSet - oldTime));
       persisted.eepromWrite();
-      
+
       doMenuFunc = doMenu;
       inMenu = false; // exit all menus
       display.clear();
@@ -2096,12 +2096,12 @@ void loop()
 #else
     snprintf(buf, sizeof(buf), P("%2d:%02d%cM "), hourFormat12(localTime()), minute(localTime()), isPM(localTime()) ? 'P' : 'A');
 #endif
+    display.print(buf);
   }
   else
   {
-    snprintf(buf, sizeof(buf), P("        "));
+    for (int i = 0; i < 8; i++) display.print(' ');
   }
-  display.print(buf);
 
   if (paused)
   {
