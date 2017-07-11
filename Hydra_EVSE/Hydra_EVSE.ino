@@ -442,8 +442,8 @@ void error(unsigned int status)
   timeouts.clear();
 
   // kick off gfi retry timer (if under the allowed number of attempts).
-  if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
-    timeouts.gfi_time = millis();
+  if ( (status & STATUS_ERR_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
+    timeouts.gfi_time = now;
   }
 
   if ( car == BOTH || car == CAR_A)
@@ -2091,12 +2091,12 @@ void loop()
 #else
     snprintf(buf, sizeof(buf), P("%2d:%02d%cM "), hourFormat12(localTime()), minute(localTime()), isPM(localTime()) ? 'P' : 'A');
 #endif
+    display.print(buf);
   }
   else
   {
-    snprintf(buf, sizeof(buf), P("        "));
+    for (int i = 0; i < 8; i++) display.print(' ');
   }
-  display.print(buf);
 
   if (paused)
   {
