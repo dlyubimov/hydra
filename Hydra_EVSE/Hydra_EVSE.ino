@@ -443,7 +443,7 @@ void error(unsigned int status)
   timeouts.clear();
 
   // kick off gfi retry timer (if under the allowed number of attempts).
-  if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ < GFI_CLEAR_ATTEMPTS) {
+  if ( (status & STATUS_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
     timeouts.gfi_time = millis();
   }
 
