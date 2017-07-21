@@ -154,10 +154,10 @@
 #define GFI_TEST_DEBOUNCE_TIME 400 // Delay extra time after GFCI clears to make sure it stays.
 
 //After each GFCI event we will retry charging up to 4 times after a 15 minute
-// delay per event. (UL 2231) 
-#define GFI_CLEAR_MS (15 * 60 * 1000)
+// delay per event. (UL 2231). This MUST BE bigger than ERROR_DELAY (power on high pilot withdrawal),
+//#define GFI_CLEAR_MS (15 * 60 * 1000)
 // debug
-//#define GFI_CLEAR_MS (60 * 1000)
+#define GFI_CLEAR_MS (60 * 1000)
 
 #define GFI_CLEAR_ATTEMPTS 4
 
@@ -543,6 +543,7 @@ extern char *formatMilliamps(unsigned long milliamps);
 extern boolean &enable_dst;
 extern car_struct cars[];
 extern DSTRule dstRules[2];
+extern timeouts_struct timeouts;
 
 
 ///////////////////////////////////////////////////////////
