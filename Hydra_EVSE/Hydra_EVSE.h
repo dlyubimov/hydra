@@ -157,7 +157,7 @@
 // delay per event. (UL 2231). This MUST BE bigger than ERROR_DELAY (power on high pilot withdrawal),
 //#define GFI_CLEAR_MS (15 * 60 * 1000)
 // debug
-#define GFI_CLEAR_MS (60 * 1000)
+//#define GFI_CLEAR_MS (60 * 1000)
 
 #define GFI_CLEAR_ATTEMPTS 4
 
