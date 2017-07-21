@@ -4,11 +4,15 @@ Hydra EVSE version 2.4.1
 * WARNING: EEPROM format is incompatible with previous releases, this release will 
 reset all the eeprom settings
 
+* Unit test mode in a standard uno 3 board
+
+* Display and pin assign hardware abstractions
+
 * A lot of redundant code and constants eliminated
 ** display duplication
 ** symmetrical code duplication
 ** timezone library is gone. Funcationality rewritten in more compact way
-** prodcution removes serial logging and its related strings completely 
+** the production versuib removes serial logging and its related strings completely 
 
 * eprom persitence and validation: 
 ** save/load via one operation as the whole struct 
@@ -19,7 +23,11 @@ reset all the eeprom settings
   
 * experimental: flearn and apply RTC calibration with a fast convergent model with embedded Bayesian treatment
 
-* experimental: up to 4 attemtps to restart EVSE charging after a GFI fault separated by 15 minute pause
+* experimental: up to 4 attemtps to restart EVSE charging after a GFI fault separated by 15 minute pause. The 
+attempt count is reset by one of the following: 
+** EVSE restart
+** EVSE enter into paused mode by short-pushing the button
+** Unplugging _both_ cars thus clearing _both_ states into state A
 
 
 
