@@ -443,7 +443,7 @@ void error(unsigned int status)
   timeouts.clear();
 
   // kick off gfi retry timer (if under the allowed number of attempts).
-  if ( (status & STATUS_ERR_MASK) == STATUS_ERR_G  && gfi_count++ <= GFI_CLEAR_ATTEMPTS) {
+  if ( (status & STATUS_ERR_MASK) == STATUS_ERR_G  && gfi_count < GFI_CLEAR_ATTEMPTS) {
     timeouts.gfi_time = now;
   }
 
@@ -2127,6 +2127,7 @@ void loop()
   // GFI retry if set
   if (timeouts.gfi_time > 0 && timeouts.gfi_time + GFI_CLEAR_MS < millis()) {
     timeouts.clear();
+    gfi_count++;
     for (int i = 0; i < 2; i++) cars[i].last_state = DUNNO;
   }
 

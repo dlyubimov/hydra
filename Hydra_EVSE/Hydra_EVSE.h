@@ -36,7 +36,7 @@
 #include "dst.h"
 
 // SW version
-#define SW_VERSION "2.4.1-dev"
+#define SW_VERSION "2.4.1"
 
 // Define this for the basic unit tests run in a generica arduino uno board with a display shield.
 // #define UNIT_TESTS
@@ -156,8 +156,6 @@
 //After each GFCI event we will retry charging up to 4 times after a 15 minute
 // delay per event. (UL 2231). This MUST BE bigger than ERROR_DELAY (power on high pilot withdrawal),
 #define GFI_CLEAR_MS (15 * 60 * 1000)
-// debug
-//#define GFI_CLEAR_MS (60 * 1000)
 
 #define GFI_CLEAR_ATTEMPTS 4
 
