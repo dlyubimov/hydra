@@ -762,10 +762,11 @@ void car_struct::sequential_mode_transition(unsigned int car_state)
           // If it's not us, then we simply ignore this transition entirely. The other car will wind up in this same place,
           // we'll turn their pilot on, and then clear the tiebreak. Next time we roll through, we'll go into the other
           // half of this if/else and we'll get the "wait" display
-          if (sequential_mode_tiebreak != car )
-          {
-            return;
-          }
+//          if (sequential_mode_tiebreak == car )
+//          {
+//            displayStatus(car | (seq_done? STATUS_DONE : STATUS_OFF) );
+//            break;
+//          }
           // But if it IS us, then clear the tiebreak.
           if (!seq_done && (sequential_mode_tiebreak == car ))
           {
