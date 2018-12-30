@@ -1,7 +1,18 @@
+Hydra EVSE version 2.4.4
+========================
+
+* Bug fix: in sequential mode, unpaused, when 2nd car is plugged in, tiebreak is not immediately reset to that car, and the status is not updated (keeps showing unplugged).
+New behavior: in sequential mode, unpaused, when 2nd car is plugged in, and the other car is not charging for whatever reason, tiebreak is immediately assigned to the 
+car being plugged in, usually resulting in immediate charge handover to that car when error free.
+
+* GFI_TEST_DEBOUNCE_TIME hiked back up to 450ms.
+
+
 Hydra EVSE version 2.4.3
 ========================
 
 * Bug fix: GFI fault count limit does not during pause mode
+
 * GFI_TEST_DEBOUNCE_TIME 250 (down from 400ms)
 
 Hydra EVSE version 2.4.2
